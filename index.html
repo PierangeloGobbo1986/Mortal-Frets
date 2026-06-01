@@ -1,0 +1,1837 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MORTAL FRETS</title>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#07070f;--panel:#0d0d1a;--border:#3a0000;
+  --red:#cc0000;--red2:#ff2020;--gold:#ffd700;--gold2:#b8962e;
+  --green:#00ff41;--green2:#00aa2b;--text:#e8dfc8;--muted:#77706a;
+  --amber:#cc8800;
+}
+/* ── ARENA BACKGROUND + CRT SCANLINES ── */
+body{
+  background-color:var(--bg);
+  background-image:
+    radial-gradient(ellipse at 50% 105%, rgba(120,0,0,.55) 0%, transparent 55%),
+    radial-gradient(ellipse at 10% 50%, rgba(60,0,0,.25) 0%, transparent 40%),
+    radial-gradient(ellipse at 90% 50%, rgba(60,0,0,.25) 0%, transparent 40%);
+  color:var(--text);font-family:'Rajdhani',sans-serif;font-size:16px;min-height:100vh;overflow-x:hidden
+}
+body::after{
+  content:'';position:fixed;inset:0;
+  background:repeating-linear-gradient(0deg,rgba(0,0,0,0) 0px,rgba(0,0,0,0) 3px,rgba(0,0,0,.13) 3px,rgba(0,0,0,.13) 4px);
+  pointer-events:none;z-index:9998
+}
+body.shake{animation:screenshake .45s ease-out}
+.screen{display:none;max-width:980px;margin:0 auto;padding:16px}
+.screen.active{display:block}
+.screen.active{display:block}
+
+/* ── TITLE & LOGO ── */
+.title-wrap{text-align:center;padding:22px 0 0;position:relative}
+.title{
+  font-family:'Press Start 2P',monospace;
+  font-size:clamp(22px,4.5vw,42px);
+  color:var(--gold);
+  text-shadow:0 0 15px rgba(255,80,0,.9),0 0 35px rgba(255,40,0,.6),0 0 70px rgba(200,0,0,.4),4px 4px 0 rgba(0,0,0,.9);
+  letter-spacing:6px;display:inline-block;
+  animation:flicker 5s infinite
+}
+.title-skull{font-size:clamp(20px,3vw,32px);color:var(--red);text-shadow:0 0 16px var(--red);display:block;text-align:center;margin-bottom:4px;animation:pulse 2s ease-in-out infinite}
+.blood-line{
+  height:4px;max-width:560px;margin:6px auto 0;
+  background:linear-gradient(90deg,transparent,var(--red) 15%,#ff1a1a 50%,var(--red) 85%,transparent);
+  box-shadow:0 0 12px var(--red),0 0 24px rgba(200,0,0,.6);
+  position:relative
+}
+.blood-line::after{
+  content:'';position:absolute;bottom:-12px;left:0;right:0;height:12px;
+  background:
+    radial-gradient(ellipse 5px 12px at 18% 0%,var(--red) 80%,transparent 81%),
+    radial-gradient(ellipse 4px 9px at 35% 0%,var(--red) 80%,transparent 81%),
+    radial-gradient(ellipse 6px 14px at 52% 0%,var(--red) 80%,transparent 81%),
+    radial-gradient(ellipse 4px 8px at 68% 0%,var(--red) 80%,transparent 81%),
+    radial-gradient(ellipse 5px 11px at 83% 0%,var(--red) 80%,transparent 81%)
+}
+.subtitle{font-family:'Press Start 2P',monospace;font-size:clamp(7px,1.3vw,10px);color:#cc3300;text-align:center;letter-spacing:4px;margin:18px 0 18px;text-shadow:0 0 8px rgba(200,50,0,.6)}
+
+/* ── PANELS ── */
+.panel{
+  background:linear-gradient(180deg,#0f0010 0%,#0a000e 100%);
+  border:1px solid #4a0000;border-radius:2px;padding:18px;margin-bottom:14px;position:relative;
+  box-shadow:0 0 20px rgba(120,0,0,.25),inset 0 1px 0 rgba(255,50,0,.08)
+}
+.panel::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--red) 20%,#ff4400 50%,var(--red) 80%,transparent)}
+.panel::after{content:'';position:absolute;bottom:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(180,0,0,.4),transparent)}
+.panel-title{font-family:'Press Start 2P',monospace;font-size:9px;color:var(--gold);letter-spacing:2px;margin-bottom:10px;text-transform:uppercase;display:block;text-shadow:0 0 8px rgba(255,180,0,.4)}
+
+.mk-input{background:#0a0a15;border:1px solid #777;color:var(--text);font-family:'Rajdhani',sans-serif;font-size:17px;font-weight:600;padding:10px 14px;width:100%;outline:none;letter-spacing:2px;border-radius:2px}
+.mk-input:focus{border-color:var(--red);box-shadow:0 0 8px rgba(204,0,0,.3)}
+.mk-input::placeholder{color:var(--muted)}
+select.mk-input{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='7' viewBox='0 0 12 7'%3E%3Cpath d='M0 0l6 7 6-7z' fill='%23999'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;padding-right:38px}
+
+.mk-btn{font-family:'Press Start 2P',monospace;font-size:9px;padding:12px 18px;border:2px solid var(--red);background:transparent;color:var(--text);cursor:pointer;letter-spacing:1px;text-transform:uppercase;transition:all .1s;border-radius:2px}
+.mk-btn:hover{background:var(--red);color:#fff;box-shadow:0 0 14px rgba(204,0,0,.6)}
+.mk-btn:active{transform:scale(.97)}
+.mk-btn:disabled{opacity:.3;cursor:not-allowed;pointer-events:none}
+.mk-btn.gold{border-color:var(--gold);color:var(--gold)}
+.mk-btn.gold:hover{background:var(--gold);color:#000}
+.mk-btn.grn{border-color:var(--green);color:var(--green)}
+.mk-btn.grn:hover{background:var(--green);color:#000}
+.mk-btn.mercy{border-color:var(--amber);color:var(--amber);opacity:.25;transition:opacity .3s,box-shadow .3s}
+.mk-btn.mercy.rdy{opacity:1;box-shadow:0 0 12px rgba(204,136,0,.55);animation:amberpulse 1.4s ease-in-out infinite}
+.mk-btn.mercy.rdy:hover{background:var(--amber);color:#000}
+
+/* Answer buttons — NO text-transform so m/M and ♭/♯ are preserved */
+.ans-grid{display:grid;gap:8px;padding:4px 0}
+.ans-grid.g6{grid-template-columns:repeat(6,1fr)}
+.ans-grid.g3{grid-template-columns:repeat(3,1fr)}
+.ans-grid.gcustom{display:flex;flex-direction:column;gap:8px}
+.ans-row{display:flex;gap:8px;justify-content:center}
+.ans-row .ans-btn{flex:1}
+.ans-btn{font-family:'Rajdhani',sans-serif;font-size:15px;font-weight:700;padding:11px 8px;
+  border:1px solid #3a0000;background:#0f0008;color:var(--text);
+  cursor:pointer;letter-spacing:.3px;transition:all .1s;text-align:center;
+  border-radius:2px;line-height:1.2;min-height:44px}
+.ans-btn:hover:not(:disabled){border-color:var(--red2);background:#200010;color:#fff}
+.ans-btn.correct{background:#004d15;border-color:var(--green);color:var(--green)}
+.ans-btn.wrong{background:#5a0000;border-color:var(--red2);color:#fff;animation:shake .3s}
+.ans-btn:disabled{cursor:not-allowed}
+.ans-btn.target{border-color:var(--gold);color:var(--gold);background:rgba(60,40,0,.4);box-shadow:0 0 12px rgba(255,180,0,.4);animation:amberpulse 1.4s infinite;cursor:default;pointer-events:none}
+
+/* ── STATS BAR ── */
+.stats-bar{display:flex;justify-content:space-between;align-items:center;padding:10px 16px;
+  background:linear-gradient(90deg,#0a0015,#0d0005,#0a0015);
+  border:1px solid #3a0010;margin-bottom:8px;gap:8px;flex-wrap:wrap;
+  box-shadow:inset 0 1px 0 rgba(255,0,0,.1),0 2px 8px rgba(0,0,0,.6)}
+.stat-item{display:flex;flex-direction:column;align-items:center;gap:2px}
+.stat-lbl{font-family:'Press Start 2P',monospace;font-size:6px;color:var(--muted)}
+.stat-val{font-family:'Press Start 2P',monospace;font-size:10px;color:var(--gold)}
+.stat-val.timer{color:var(--red2)}
+.stat-val.small{font-size:7px}
+.stat-val.err{color:var(--red2)}
+
+/* ── HP BAR (MK style) ── */
+.hpbar-wrap{margin-bottom:10px}
+.hpbar-labels{display:flex;justify-content:space-between;font-family:'Press Start 2P',monospace;font-size:7px;color:var(--muted);margin-bottom:3px}
+.hpbar{
+  height:20px;
+  background:#150000;
+  border:2px solid #550000;
+  border-radius:1px;
+  position:relative;
+  box-shadow:inset 0 2px 6px rgba(0,0,0,.8),0 0 10px rgba(150,0,0,.3)
+}
+.hpbar::before{content:'';position:absolute;top:0;left:0;right:0;height:45%;background:rgba(255,255,255,.06);pointer-events:none;z-index:1}
+.hpbar-fill{
+  height:100%;
+  background:linear-gradient(90deg,#00cc33,#00ff41);
+  transition:width .35s cubic-bezier(.4,0,.2,1),background .6s;
+  box-shadow:0 0 10px rgba(0,255,65,.6),inset 0 1px 0 rgba(255,255,255,.2);
+  position:relative
+}
+.hpbar-fill::after{content:'';position:absolute;top:0;right:0;width:3px;height:100%;background:rgba(255,255,255,.35)}
+.hpbar-fill.warn{background:linear-gradient(90deg,#cc8800,#ffcc00);box-shadow:0 0 10px rgba(255,200,0,.5)}
+.hpbar-fill.danger{background:linear-gradient(90deg,#aa0000,#ff2020);box-shadow:0 0 10px rgba(255,0,0,.6)}
+
+.q-area{text-align:center;padding:12px 16px;min-height:52px;display:flex;align-items:center;justify-content:center;background:#0a0010;border:1px solid #2a0000;margin-bottom:10px}
+.q-text{font-family:'Press Start 2P',monospace;font-size:9px;color:var(--text);letter-spacing:1px;line-height:1.7}
+
+#fb-wrap{background:#2a1005;border:2px solid #1a0800;border-radius:3px;padding:10px 6px;margin:6px 0;
+  overflow-x:scroll;-webkit-overflow-scrolling:touch;
+  scrollbar-width:thin;scrollbar-color:var(--red) #1a0005}
+#fb-wrap::-webkit-scrollbar{height:8px;display:block}
+#fb-wrap::-webkit-scrollbar-track{background:#1a0005}
+#fb-wrap::-webkit-scrollbar-thumb{background:var(--red);border-radius:4px;min-width:40px}
+#fb-svg{display:block;width:100%;min-width:620px}
+
+.ctrl-bar{display:flex;gap:7px;justify-content:center;flex-wrap:wrap;margin-top:12px}
+.ctrl-bar .mk-btn{font-size:11px;padding:14px 20px;letter-spacing:2px}
+
+#fb-overlay{
+  position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);
+  font-family:'Press Start 2P',monospace;font-size:clamp(32px,7vw,72px);
+  text-align:center;pointer-events:none;z-index:1000;opacity:0;
+  letter-spacing:4px;line-height:1.2
+}
+#fb-overlay.correct{color:var(--green);text-shadow:0 0 30px var(--green),0 0 60px rgba(0,200,50,.5),4px 4px 0 rgba(0,0,0,.8)}
+#fb-overlay.wrong{color:#ff0000;text-shadow:0 0 30px #ff0000,0 0 60px rgba(255,0,0,.7),4px 4px 0 rgba(0,0,0,.8)}
+#fb-overlay.mercy-cls{color:var(--amber);text-shadow:0 0 30px var(--amber),4px 4px 0 rgba(0,0,0,.8)}
+#fb-overlay.show{animation:fbPop 1s forwards}
+
+.score-big{font-family:'Press Start 2P',monospace;font-size:clamp(36px,8vw,70px);color:var(--red2)}
+.score-lbl{font-family:'Press Start 2P',monospace;font-size:9px;color:var(--muted);margin-top:6px}
+.vtext{font-family:'Press Start 2P',monospace;font-size:clamp(14px,2.8vw,26px);letter-spacing:2px;margin:16px 0;text-align:center}
+.flawless{color:var(--gold);text-shadow:0 0 30px rgba(255,215,0,.9),0 0 60px rgba(255,100,0,.6);animation:glow 1.5s ease-in-out infinite}
+.vred{color:var(--red2);text-shadow:0 0 24px rgba(255,0,0,.8)}
+.vgreen{color:var(--green);text-shadow:0 0 24px rgba(0,255,65,.8)}
+
+.hof-tbl{width:100%;border-collapse:collapse;font-size:14px}
+.hof-tbl th{font-family:'Press Start 2P',monospace;font-size:7px;color:var(--gold);padding:8px 6px;border-bottom:1px solid var(--red);text-align:left}
+.hof-tbl td{padding:7px 6px;border-bottom:1px solid #180000;color:var(--text)}
+.hof-tbl tr:nth-child(1) td{color:var(--gold)}
+.hof-tbl tr:nth-child(2) td{color:#c0c0c0}
+.hof-tbl tr:nth-child(3) td{color:#cd7f32}
+.rank{font-family:'Press Start 2P',monospace;font-size:9px}
+
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:500;align-items:center;justify-content:center;padding:20px}
+.overlay.open{display:flex}
+.modal{background:var(--panel);border:1px solid var(--red);border-radius:3px;padding:24px;max-width:600px;width:100%;max-height:80vh;overflow-y:auto}
+.modal h3{font-family:'Press Start 2P',monospace;font-size:11px;color:var(--gold);margin-bottom:14px}
+.modal p,.modal li{font-size:14px;line-height:1.65;color:var(--text);margin-bottom:7px}
+.modal ul{padding-left:18px}
+.modal strong{color:var(--gold)}
+
+.notog{display:flex;border:1px solid var(--red);width:fit-content;overflow:hidden;border-radius:2px}
+.notog button{font-family:'Press Start 2P',monospace;font-size:7px;padding:8px 12px;border:none;background:transparent;color:var(--muted);cursor:pointer;transition:all .1s}
+.notog button.on{background:var(--red);color:#fff}
+
+.firebase-note{font-size:11px;color:var(--muted);text-align:center;padding:6px;font-family:'Rajdhani',sans-serif;line-height:1.5;margin-top:4px}
+.firebase-note a{color:var(--gold2);text-decoration:none}
+
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--red)}
+
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-7px)}75%{transform:translateX(7px)}}
+@keyframes screenshake{0%,100%{transform:translate(0,0)}10%{transform:translate(-8px,-2px) rotate(-.4deg)}20%{transform:translate(8px,2px) rotate(.4deg)}30%{transform:translate(-6px,1px)}40%{transform:translate(6px,-1px)}50%{transform:translate(-5px,2px)}60%{transform:translate(5px,-2px)}70%{transform:translate(-3px,1px)}80%{transform:translate(3px,-1px)}90%{transform:translate(-2px,0)}}
+@keyframes fbPop{0%{opacity:1;transform:translate(-50%,-50%) scale(.5) skewX(-5deg)}15%{opacity:1;transform:translate(-50%,-50%) scale(1.15) skewX(2deg)}30%{transform:translate(-50%,-50%) scale(.97)}50%{opacity:1;transform:translate(-50%,-50%) scale(1)}80%{opacity:1;transform:translate(-50%,-50%) scale(1)}100%{opacity:0;transform:translate(-50%,-50%) scale(.9)}}
+@keyframes glow{0%,100%{text-shadow:0 0 20px rgba(255,215,0,.5),4px 4px 0 rgba(0,0,0,.9)}50%{text-shadow:0 0 40px rgba(255,215,0,1),0 0 70px rgba(255,80,0,.9),4px 4px 0 rgba(0,0,0,.9)}}
+@keyframes flicker{0%,100%{opacity:1}91%{opacity:1}92%{opacity:.6}93%{opacity:1}97%{opacity:.8}98%{opacity:1}}
+@keyframes pulse{0%,100%{transform:scale(1);opacity:.8}50%{transform:scale(1.1);opacity:1}}
+@keyframes amberpulse{0%,100%{box-shadow:0 0 8px rgba(204,136,0,.4)}50%{box-shadow:0 0 20px rgba(204,136,0,.9)}}
+@keyframes fightIn{0%{opacity:0;transform:scale(2.5);letter-spacing:20px}60%{opacity:1;transform:scale(.95);letter-spacing:6px}80%{transform:scale(1.04)}100%{opacity:1;transform:scale(1);letter-spacing:6px}}
+@keyframes roundIn{0%{opacity:0;transform:translateY(-30px)}100%{opacity:1;transform:translateY(0)}}
+@keyframes fadeOut{0%{opacity:1}100%{opacity:0}}
+
+/* ── CONSTRUCTION MODE ── */
+.con-task{text-align:center;padding:10px 16px;background:#0a0010;border:1px solid #2a0000;margin-bottom:10px}
+.con-task-main{font-family:'Press Start 2P',monospace;font-size:clamp(11px,2vw,16px);color:var(--gold);letter-spacing:2px;text-shadow:0 0 10px rgba(255,180,0,.5)}
+.con-task-sub{font-family:'Press Start 2P',monospace;font-size:8px;color:var(--muted);margin-top:6px;letter-spacing:1px}
+.role-progress{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;padding:8px 0}
+.role-badge{font-family:'Press Start 2P',monospace;font-size:9px;padding:6px 10px;border:2px solid #3a0000;border-radius:2px;color:var(--muted);min-width:36px;text-align:center;transition:all .2s}
+.role-badge.next{border-color:var(--gold);color:var(--gold);box-shadow:0 0 8px rgba(255,200,0,.4);animation:amberpulse 1.2s infinite}
+.role-badge.done{border-color:var(--green2);color:var(--green);background:rgba(0,100,30,.2)}
+.role-badge.fixed{border-color:#884400;color:#cc8800;background:rgba(60,20,0,.4)}
+.note-targets{display:grid;grid-template-columns:repeat(6,1fr);gap:7px;padding:4px 0}
+.note-target-btn{font-family:'Rajdhani',sans-serif;font-size:15px;font-weight:700;padding:11px 8px;
+  border:1px solid #3a0000;background:#0f0008;color:var(--muted);
+  border-radius:2px;text-align:center;line-height:1.2;min-height:44px}
+.note-target-btn.target{border-color:var(--gold);color:var(--gold);background:rgba(60,40,0,.4);box-shadow:0 0 12px rgba(255,180,0,.4);animation:amberpulse 1.4s infinite}
+@media(max-width:600px){.mk-btn{font-size:7px;padding:10px 12px}.ans-btn{font-size:13px;padding:9px 6px}.ans-grid.g6{grid-template-columns:repeat(4,1fr)}.ans-grid.g3{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+
+<!-- ===== SCREEN 1: LOBBY ===== -->
+<div id="s-lobby" class="screen active">
+  <div class="title-wrap">
+    <div class="title-skull">&#x2620;&#xFE0E;</div>
+    <div class="title">MORTAL FRETS</div>
+    <div class="blood-line"></div>
+  </div>
+  <div class="subtitle">⚔ THE FRETBOARD SLAYER ⚔</div>
+  <div class="panel" style="max-width:660px;margin:0 auto 14px">
+    <span class="panel-title">Enter Player Name</span>
+    <input id="inp-name" class="mk-input" placeholder="PLAYER NAME" maxlength="20" autocomplete="off">
+    <div style="margin:14px 0 10px">
+      <span class="panel-title" style="margin-bottom:7px">Note Notation</span>
+      <div class="notog">
+        <button id="btn-abc" class="on" onclick="setNotation('ABC')">A-B-C</button>
+        <button id="btn-sol" onclick="setNotation('SOL')">Do-Re-Mi</button>
+      </div>
+    </div>
+    <div style="margin-bottom:10px">
+      <span class="panel-title" style="margin-bottom:7px">Select Game Mode</span>
+      <select id="sel-mode" class="mk-input">
+        <optgroup label="── IDENTIFICATION ──">
+          <option value="note-id">1 — Note Identification</option>
+          <option value="interval-id">2 — Interval Identification</option>
+          <option value="chord-id">3 — Chord Identification</option>
+          <option value="scale-id">4 — Scale Identification</option>
+        </optgroup>
+        <optgroup label="── CONSTRUCTION ──">
+          <option value="note-con">5 — Note Construction</option>
+          <option value="interval-con">6 — Interval Construction</option>
+          <option value="chord-con">7 — Chord Construction</option>
+          <option value="scale-con">8 — Scale Construction</option>
+        </optgroup>
+      </select>
+    </div>
+    <div id="box-wrap" style="display:none;margin-bottom:10px">
+      <span class="panel-title" id="box-lbl" style="margin-bottom:7px">Box Selection</span>
+      <select id="sel-box" class="mk-input">
+        <option value="-1">💀 KHAOS – Random box every question</option>
+        <option value="0">Open Box (frets 0–4)</option>
+        <option value="1">Box 1 (frets 1–5)</option>
+        <option value="2">Box 2 (frets 2–6)</option>
+        <option value="3">Box 3 (frets 3–7)</option>
+        <option value="4">Box 4 (frets 4–8)</option>
+        <option value="5">Box 5 (frets 5–9)</option>
+        <option value="6">Box 6 (frets 6–10)</option>
+        <option value="7">Box 7 (frets 7–11)</option>
+        <option value="8">Box 8 (frets 8–12)</option>
+      </select>
+    </div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <button class="mk-btn gold" id="btn-start" style="flex:2">⚔ START FIGHT</button>
+      <button class="mk-btn" id="btn-htp" style="flex:1">? HOW TO PLAY</button>
+    </div>
+  </div>
+  <div class="panel" id="lobby-hof" style="max-width:660px;margin:0 auto">
+    <span class="panel-title" id="lobby-hof-title">HALL OF FAME — NOTE IDENTIFICATION</span>
+    <div id="lobby-hof-body" style="color:var(--muted);font-size:13px;text-align:center;padding:10px">Loading...</div>
+  </div>
+</div>
+
+<!-- ===== SCREEN 2: GAME ===== -->
+<div id="s-game" class="screen">
+  <div class="stats-bar">
+    <div class="stat-item"><span class="stat-lbl">QUESTION</span><span class="stat-val" id="st-q">1/10</span></div>
+    <div class="stat-item"><span class="stat-lbl">ERRORS</span><span class="stat-val err" id="st-err">0</span></div>
+    <div class="stat-item"><span class="stat-lbl">TIME</span><span class="stat-val timer" id="st-time">00:00</span></div>
+    <div class="stat-item"><span class="stat-lbl">MODE</span><span class="stat-val small" id="st-mode">NOTE ID</span></div>
+  </div>
+  <div class="hpbar-wrap">
+    <div class="hpbar-labels"><span>PROGRESS</span><span id="hpbar-q">0/10</span></div>
+    <div class="hpbar"><div class="hpbar-fill" id="prog" style="width:0%"></div></div>
+  </div>
+  <div class="q-area"><div class="q-text" id="q-text">IDENTIFY THE NOTE</div></div>
+  <div id="fb-wrap"><svg id="fb-svg" viewBox="0 0 960 292" xmlns="http://www.w3.org/2000/svg"></svg></div>
+  <div class="panel" style="padding:12px">
+    <div class="ans-grid g6" id="ans-btns"></div>
+  </div>
+  <div class="ctrl-bar">
+    <button class="mk-btn" id="btn-pause">II PAUSE</button>
+    <button class="mk-btn" id="btn-restart">RESTART</button>
+    <button class="mk-btn" id="btn-stop">STOP</button>
+    <button class="mk-btn gold" id="btn-submit" style="display:none">SUBMIT</button>
+    <button class="mk-btn mercy" id="btn-mercy">MERCY</button>
+  </div>
+</div>
+
+<!-- ===== SCREEN 3: RESULTS ===== -->
+<div id="s-results" class="screen">
+  <div style="text-align:center;padding:10px 0 20px">
+    <div class="vtext" id="v-text">FINISH HIM!</div>
+    <div class="score-big" id="fin-score">0</div>
+    <div class="score-lbl">ERRORS</div>
+    <div style="font-family:'Press Start 2P',monospace;font-size:9px;color:var(--muted);margin-top:10px" id="fin-time">TIME: 00:00</div>
+    <div style="display:flex;gap:10px;justify-content:center;margin-top:18px;flex-wrap:wrap">
+      <button class="mk-btn gold" id="btn-save">💀 HALL OF FAME</button>
+      <button class="mk-btn grn" id="btn-again">▶ PLAY AGAIN</button>
+      <button class="mk-btn" id="btn-menu">← MENU</button>
+    </div>
+  </div>
+  <div class="panel">
+    <span class="panel-title" id="hof-title">HALL OF FAME</span>
+    <div id="hof-load" style="color:var(--muted);text-align:center;padding:16px;font-size:13px">Loading...</div>
+    <div id="hof-body"></div>
+    <div class="firebase-note" id="firebase-note"></div>
+  </div>
+</div>
+
+<!-- ===== MODAL ===== -->
+<div class="overlay" id="modal">
+  <div class="modal">
+    <h3>HOW TO PLAY — MORTAL FRETS</h3>
+    <p><strong>OBJECTIVE:</strong> Complete 10 questions per round with as few errors as possible. The timer runs throughout — leaderboard ranks by errors (fewer = better), then by time.</p>
+    <p><strong>IDENTIFICATION MODES</strong> — a question appears on the fretboard, you press the correct button:</p>
+    <ul>
+      <li><strong>Note ID:</strong> A dot appears — identify the note. Sounds when it appears. Open strings (fret 0) included.</li>
+      <li><strong>Interval ID:</strong> R = Root (red), second dot within ±3 frets/±2 strings. Identify the interval. Both notes sound on correct answer.</li>
+      <li><strong>Chord ID:</strong> Chord voicing within ±2 frets/±2 strings of root, one note per string. Identify the chord type. All notes strum on correct answer.</li>
+      <li><strong>Scale ID:</strong> Full scale in a 5-fret box, R = Root. Identify the scale. Scale plays from lowest Root up to the octave on correct answer.</li>
+    </ul>
+    <p><strong>CONSTRUCTION MODES</strong> — the target is shown (illuminated button), you build it on the fretboard by clicking, then press SUBMIT:</p>
+    <ul>
+      <li><strong>Note Construction:</strong> Place ALL occurrences of the target note on the fretboard. Wrong dots turn red; missing positions turn orange — click orange to confirm.</li>
+      <li><strong>Interval Construction:</strong> R is pre-placed (red). Place the interval note anywhere on the fretboard at the correct pitch.</li>
+      <li><strong>Chord Construction:</strong> One chord tone is pre-placed (amber). Place the remaining notes in any order — any string, any fret — to complete the chord. One note per string. Triads = 3 notes total, tetrads = 4.</li>
+      <li><strong>Scale Construction:</strong> R is pre-placed in a 5-fret box. Fill all scale note positions inside the box. Wrong dots turn red; missing ones turn orange.</li>
+    </ul>
+    <p><strong>BOX SELECTION</strong> — Chord and Scale modes (both ID and Construction) let you work on a fixed 5-fret box or 💀 KHAOS for a random box each question.</p>
+    <p><strong>WRONG ANSWER:</strong> You stay on the same question and can retry. Timer keeps running. After 2 wrong answers, the ☠ Mercy button lights up.</p>
+    <p><strong>MERCY:</strong> Hold ☠ to reveal the full solution on the fretboard. Release to hide it and retry. Resets each new question.</p>
+    <p><strong>VARIETY:</strong> Every type (note/interval/chord/scale) appears at most twice per round, and the exact same question never repeats.</p>
+    <p><strong>SCORING:</strong> 0 errors = <span style="color:var(--gold)">FLAWLESS VICTORY</span> · 1–2 = Excellent Fighter · 3–5 = Skilled Warrior · 6–10 = Fight Harder · 11–19 = Finish Him · 20+ = Fatality</p>
+    <div style="margin-top:16px"><button class="mk-btn gold" id="btn-close-modal">✓ GOT IT</button></div>
+  </div>
+</div>
+
+<div id="fb-overlay"></div>
+
+<!-- FIGHT announcement overlay -->
+<div id="fight-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:2000;align-items:center;justify-content:center;flex-direction:column;pointer-events:none">
+  <div id="fight-mode-lbl" style="font-family:'Press Start 2P',monospace;font-size:clamp(10px,2vw,16px);color:#fff;letter-spacing:4px;text-shadow:2px 2px 0 #000;animation:roundIn .3s ease-out;margin-bottom:18px"></div>
+  <div id="fight-word" style="font-family:'Press Start 2P',monospace;font-size:clamp(42px,9vw,88px);color:var(--gold);letter-spacing:6px;text-shadow:0 0 30px #ff8800,0 0 60px #ff4400,5px 5px 0 #000;animation:fightIn .5s .3s cubic-bezier(.2,0,.2,1.4) both"></div>
+</div>
+<!-- Screen flash overlay -->
+<div id="screen-flash" style="display:none;position:fixed;inset:0;pointer-events:none;z-index:1500"></div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+<script>
+// ============================================================
+// FIREBASE CONFIG — replace with your own project values
+// ============================================================
+const FB_CONFIG = {
+  apiKey:            "AIzaSyDphwOAAW0JbuJ39OgEc7X8WdN1jWjExhY",
+  authDomain:        "mortal-chords.firebaseapp.com",
+  databaseURL:       "https://mortal-chords-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId:         "mortal-chords",
+  storageBucket:     "mortal-chords.firebasestorage.app",
+  messagingSenderId: "77524158811",
+  appId:             "1:77524158811:web:4fa5ddafe635c88bcaf27e",
+};
+let fbDB=null, useFirebase=false;
+try {
+  if(FB_CONFIG.apiKey!=="YOUR_API_KEY"){
+    if(!firebase.apps.length) firebase.initializeApp(FB_CONFIG);
+    fbDB=firebase.database(); useFirebase=true;
+  }
+} catch(e){ console.warn("Firebase init error:",e); }
+
+// ============================================================
+// THEORY CONSTANTS
+// ============================================================
+const ABC     = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+const SOL     = ['Do','Do♯','Re','Re♯','Mi','Fa','Fa♯','Sol','Sol♯','La','La♯','Si'];
+const ABC_BTN = ['C','C♯/D♭','D','D♯/E♭','E','F','F♯/G♭','G','G♯/A♭','A','A♯/B♭','B'];
+const SOL_BTN = ['Do','Do♯/Re♭','Re','Re♯/Mi♭','Mi','Fa','Fa♯/Sol♭','Sol','Sol♯/La♭','La','La♯/Si♭','Si'];
+let notation='ABC';
+function noteName(pc){ return notation==='ABC'?ABC[pc%12]:SOL[pc%12]; }
+function noteButtonLabel(pc){ return notation==='ABC'?ABC_BTN[pc%12]:SOL_BTN[pc%12]; }
+
+// String 0=high e (E4), string 5=low E (E2)
+const OPEN_PC   = [4,11,7,2,9,4];
+const OPEN_MIDI = [64,59,55,50,45,40];
+const STR_LBL   = ['e','B','G','D','A','E'];
+function notePC(s,f)  { return (OPEN_PC[s]+f)%12; }
+function noteMidi(s,f){ return OPEN_MIDI[s]+f; }
+function midiToFreq(m){ return 440*Math.pow(2,(m-69)/12); }
+
+// Intervals — exact case: m=minor, M=major, P=perfect, TT=tritone
+const INTERVALS = [
+  {n:'m2',s:1},{n:'M2',s:2},{n:'m3',s:3},{n:'M3',s:4},
+  {n:'P4',s:5},{n:'TT',s:6},{n:'P5',s:7},{n:'m6',s:8},
+  {n:'M6',s:9},{n:'m7',s:10},{n:'M7',s:11},{n:'P8',s:12}
+];
+const CHORDS = [
+  {n:'Major',    sym:'Maj',  i:[0,4,7]},
+  {n:'Minor',    sym:'min',  i:[0,3,7]},
+  {n:'Aug',      sym:'Aug',  i:[0,4,8]},
+  {n:'Dim',      sym:'Dim',  i:[0,3,6]},
+  {n:'Major 7',  sym:'Maj7', i:[0,4,7,11]},
+  {n:'Dom 7',    sym:'Dom7', i:[0,4,7,10]},
+  {n:'Minor 7',  sym:'min7', i:[0,3,7,10]},
+  {n:'Half-Dim', sym:'ø7',   i:[0,3,6,10]},
+  {n:'Dim 7',    sym:'°7',   i:[0,3,6,9]},
+];
+const SCALES = [
+  {n:'Major',          i:[0,2,4,5,7,9,11]},
+  {n:'Natural Minor',  i:[0,2,3,5,7,8,10]},
+  {n:'Harmonic Minor', i:[0,2,3,5,7,8,11]},
+  {n:'Melodic Minor',  i:[0,2,3,5,7,9,11]},
+  {n:'Whole-Half Dim', i:[0,2,3,5,6,8,9,11]},
+  {n:'Half-Whole Dim', i:[0,1,3,4,6,7,9,10]},
+];
+
+// ============================================================
+// AUDIO ENGINE
+// ============================================================
+let aCtx=null, _masterOut=null, _msDest=null;
+function getCtx(){
+  if(!aCtx){
+    aCtx=new(window.AudioContext||window.webkitAudioContext)();
+    _masterOut=aCtx.createGain();
+    _masterOut.connect(aCtx.destination);
+    try{
+      _msDest=aCtx.createMediaStreamDestination();
+      _masterOut.connect(_msDest);
+    }catch(e){}
+  }
+  if(aCtx.state==='suspended') aCtx.resume();
+  return aCtx;
+}
+function getMaster(){ getCtx(); return _masterOut||aCtx.destination; }
+function playFreq(freq,dur=1.6,delay=0){
+  try{
+    const ctx=getCtx(),t=ctx.currentTime+delay;
+    const o=ctx.createOscillator(),g=ctx.createGain();
+    const o2=ctx.createOscillator(),g2=ctx.createGain();
+    const cmp=ctx.createDynamicsCompressor();
+    o.connect(g);o2.connect(g2);g.connect(cmp);g2.connect(cmp);cmp.connect(getMaster());
+    o.type='triangle';o.frequency.setValueAtTime(freq,t);
+    o2.type='sine';o2.frequency.setValueAtTime(freq*2,t);
+    g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(.38,t+.008);g.gain.exponentialRampToValueAtTime(.001,t+dur);
+    g2.gain.setValueAtTime(0,t);g2.gain.linearRampToValueAtTime(.09,t+.005);g2.gain.exponentialRampToValueAtTime(.001,t+dur*.5);
+    o.start(t);o.stop(t+dur);o2.start(t);o2.stop(t+dur);
+  }catch(e){}
+}
+function playNote(s,f,delay=0){ playFreq(midiToFreq(noteMidi(s,f)),1.6,delay); }
+function playChord(pos){ [...pos].sort((a,b)=>noteMidi(a.s,a.f)-noteMidi(b.s,b.f)).forEach((p,i)=>playNote(p.s,p.f,i*.045)); }
+function playScaleSeq(pos,rootPC){
+  const roots=pos.filter(p=>notePC(p.s,p.f)===rootPC).map(p=>({...p,m:noteMidi(p.s,p.f)})).sort((a,b)=>a.m-b.m);
+  if(!roots.length) return;
+  const rm=roots[0].m;
+  const seen=new Set();
+  pos.map(p=>({...p,m:noteMidi(p.s,p.f)})).filter(p=>p.m>=rm&&p.m<=rm+12).sort((a,b)=>a.m-b.m)
+    .filter(p=>{ if(seen.has(p.m)) return false; seen.add(p.m); return true; })
+    .forEach((p,i)=>playNote(p.s,p.f,i*.26));
+}
+
+// ============================================================
+// FRETBOARD — bigger everything
+// ============================================================
+const NS='http://www.w3.org/2000/svg';
+const LBL=44, OPEN_A=54, NUT=98, FW=72;
+const FT=26, FB=252, SH=(FB-FT)/5; // SH≈45.2px, dot r=19 fits fine
+function sY(s){ return FT+s*SH; }
+function fX(f){ return f===0?LBL+OPEN_A/2:NUT+(f-.5)*FW; }
+function mkEl(tag,a,txt){
+  const e=document.createElementNS(NS,tag);
+  for(const[k,v] of Object.entries(a)) e.setAttribute(k,v);
+  if(txt!==undefined) e.textContent=txt;
+  return e;
+}
+
+function buildFretboard(svg){
+  svg.innerHTML='';
+  const defs=mkEl('defs',{});
+  const wg=mkEl('linearGradient',{id:'wg',x1:'0',y1:'0',x2:'0',y2:'1'});
+  [['#3d1a0a','0%'],['#1e0b03','50%'],['#3d1a0a','100%']].forEach(([c,o])=>{
+    const s=mkEl('stop',{}); s.setAttribute('offset',o); s.setAttribute('stop-color',c); wg.appendChild(s);
+  });
+  defs.appendChild(wg); svg.appendChild(defs);
+  // Wood
+  svg.appendChild(mkEl('rect',{x:LBL,y:FT-8,width:960-LBL,height:FB-FT+16,fill:'#2a1005',rx:'3'}));
+  svg.appendChild(mkEl('rect',{x:LBL,y:FT-8,width:960-LBL,height:FB-FT+16,fill:'url(#wg)',rx:'3'}));
+  // Inlay dots — golden-tan, large and visible
+  [3,5,7,9,12].forEach(f=>{
+    const cx=NUT+(f-.5)*FW;
+    if(f===12){
+      [-22,22].forEach(dy=>svg.appendChild(mkEl('circle',{cx,cy:(FT+FB)/2+dy,r:'8',fill:'#d4a84b',opacity:'.9'})));
+    } else {
+      svg.appendChild(mkEl('circle',{cx,cy:(FT+FB)/2,r:'8',fill:'#d4a84b',opacity:'.9'}));
+    }
+  });
+  // Nut
+  svg.appendChild(mkEl('rect',{x:NUT-3,y:FT-8,width:'7',height:FB-FT+16,fill:'#e8e0c0',rx:'1'}));
+  // Fret lines
+  for(let f=1;f<=12;f++){
+    const x=NUT+f*FW;
+    svg.appendChild(mkEl('line',{x1:x,y1:FT-8,x2:x,y2:FB+8,stroke:'#6a6a6a','stroke-width':f===12?'3':'1.8'}));
+  }
+  // Strings
+  const sw=[.9,1.2,1.6,2.1,2.6,3.2],sc=['#ddd','#ccc','#bbb','#aaa','#999','#888'];
+  for(let s=0;s<6;s++){
+    const y=sY(s);
+    svg.appendChild(mkEl('line',{x1:LBL-2,y1:y,x2:954,y2:y,stroke:sc[s],'stroke-width':sw[s]}));
+  }
+  // String labels — big and bright
+  for(let s=0;s<6;s++)
+    svg.appendChild(mkEl('text',{x:LBL-10,y:sY(s)+6,'text-anchor':'end',fill:'#cc9966','font-size':'17','font-family':'Rajdhani,sans-serif','font-weight':'700'},STR_LBL[s]));
+  // Fret numbers — big and bright
+  for(let f=1;f<=12;f++)
+    svg.appendChild(mkEl('text',{x:NUT+(f-.5)*FW,y:FB+30,'text-anchor':'middle',fill:'#cc9966','font-size':'16','font-family':'Press Start 2P,monospace'},String(f)));
+  svg.appendChild(mkEl('text',{x:LBL+OPEN_A/2,y:FB+30,'text-anchor':'middle',fill:'#cc9966','font-size':'16','font-family':'Press Start 2P,monospace'},'0'));
+}
+
+function clearDots(svg){ svg.querySelectorAll('.gd').forEach(e=>e.remove()); }
+
+// Dots: r=19, font scaled by label length — much larger and readable
+function placeDot(svg,s,f,color,lbl='',opacity=.93){
+  const cx=fX(f),cy=sY(s);
+  const g=mkEl('g',{class:'gd'});
+  g.appendChild(mkEl('circle',{cx,cy,r:'19',fill:color,stroke:'rgba(0,0,0,.55)','stroke-width':'2',opacity}));
+  if(lbl){
+    const len=lbl.length;
+    const fs=len<=1?'18':len===2?'15':len===3?'12':'10';
+    g.appendChild(mkEl('text',{x:cx,y:cy+5.5,'text-anchor':'middle',fill:'#000','font-size':fs,'font-family':'Rajdhani,sans-serif','font-weight':'800'},lbl));
+  }
+  svg.appendChild(g);
+  return g;
+}
+
+function addBoxHighlight(svg,bs,be){
+  const lx=bs===0?LBL:NUT+(bs-1)*FW;
+  const rx=Math.min(954,NUT+be*FW);
+  const h=FB-FT+16,ty=FT-8;
+  if(lx>LBL) svg.appendChild(mkEl('rect',{x:LBL,y:ty,width:lx-LBL,height:h,fill:'rgba(0,0,0,.65)',class:'gd',style:'pointer-events:none'}));
+  if(rx<954)  svg.appendChild(mkEl('rect',{x:rx,y:ty,width:954-rx+6,height:h,fill:'rgba(0,0,0,.65)',class:'gd',style:'pointer-events:none'}));
+}
+
+// ============================================================
+// QUESTION GENERATORS
+// ============================================================
+function rnd(n){ return Math.floor(Math.random()*n); }
+
+function genNoteQ(){
+  // Level-0 first; never same position twice
+  let l0=[],l1=[];
+  for(let pc=0;pc<12;pc++){
+    const c=G.noteHistory.filter(n=>n===pc).length;
+    if(c===0) l0.push(pc); else if(c<2) l1.push(pc);
+  }
+  let pool=l0.length?l0:(l1.length?l1:Array.from({length:12},(_,i)=>i));
+  const pc=pool[rnd(pool.length)];
+  G.noteHistory.push(pc);
+  const positions=[];
+  for(let s=0;s<6;s++)
+    for(let f=0;f<=12;f++)
+      if(notePC(s,f)===pc&&!G.notePosHistory.includes(s+':'+f))
+        positions.push({s,f});
+  // Fallback if all positions already used
+  if(!positions.length)
+    for(let s=0;s<6;s++) for(let f=0;f<=12;f++) if(notePC(s,f)===pc) positions.push({s,f});
+  const pos=positions[rnd(positions.length)];
+  G.notePosHistory.push(pos.s+':'+pos.f);
+  return {type:'note',dots:[{s:pos.s,f:pos.f,color:'#ff9900',lbl:'?'}],answer:pc,sounds:[pos]};
+}
+
+function genIntervalQ(){
+  for(let t=0;t<200;t++){
+    // Max 2 per interval type; never same type+rootPC twice
+    const l0i=INTERVALS.filter(iv=>G.intervalHistory.filter(n=>n===iv.n).length===0);
+    const l1i=INTERVALS.filter(iv=>G.intervalHistory.filter(n=>n===iv.n).length<2);
+    const pool=(l0i.length?l0i:(l1i.length?l1i:INTERVALS));
+    const iv=pool[rnd(pool.length)];
+    const rs=rnd(6),rf=rnd(11);
+    const key=iv.n+':'+notePC(rs,rf);
+    if(G.intervalRootHistory.includes(key)) continue;
+    const rm=noteMidi(rs,rf),tm=rm+iv.s;
+    const cands=[];
+    for(let s=0;s<6;s++){
+      const f2=tm-OPEN_MIDI[s];
+      if(f2>=0&&f2<=12) cands.push({s,f:f2});
+    }
+    if(!cands.length) continue;
+    const tight =cands.filter(c=>Math.abs(c.f-rf)<=3&&Math.abs(c.s-rs)<=2);
+    const medium=cands.filter(c=>Math.abs(c.s-rs)<=2);
+    const candidates=tight.length?tight:(medium.length?medium:cands);
+    const p=candidates[rnd(candidates.length)];
+    G.intervalHistory.push(iv.n);
+    G.intervalRootHistory.push(key);
+    return {
+      type:'interval',
+      dots:[{s:rs,f:rf,color:'#dd2222',lbl:'R'},{s:p.s,f:p.f,color:'#ffaa00',lbl:''}],
+      answer:iv.n,sounds:[{s:rs,f:rf},{s:p.s,f:p.f}]
+    };
+  }
+  // Fallback: relax history constraints
+  const iv=INTERVALS[rnd(INTERVALS.length)];
+  const rs=rnd(6),rf=rnd(5)+3;
+  const rm=noteMidi(rs,rf),tm=rm+iv.s;
+  const cands=[];
+  for(let s=0;s<6;s++){ const f2=tm-OPEN_MIDI[s]; if(f2>=0&&f2<=12) cands.push({s,f:f2}); }
+  const p=(cands.filter(c=>Math.abs(c.s-rs)<=2)[0])||cands[0];
+  return {type:'interval',dots:[{s:rs,f:rf,color:'#dd2222',lbl:'R'},{s:p.s,f:p.f,color:'#ffaa00',lbl:''}],answer:iv.n,sounds:[{s:rs,f:rf},{s:p.s,f:p.f}]};
+}
+
+function genChordQ(boxChoice){
+  const fMin=boxChoice<0?0:boxChoice;
+  const fMax=boxChoice<0?12:boxChoice+4;
+  for(let attempt=0;attempt<200;attempt++){
+    const l0c=CHORDS.filter(ch=>G.chordHistory.filter(n=>n===ch.sym).length===0);
+    const l1c=CHORDS.filter(ch=>G.chordHistory.filter(n=>n===ch.sym).length<2);
+    const pool=l0c.length?l0c:(l1c.length?l1c:CHORDS);
+    const chord=pool[rnd(pool.length)];
+    const rootPC=rnd(12);
+    const key=chord.sym+':'+rootPC;
+    if(G.chordRootHistory.includes(key)) continue;
+    const feasible=allFeasibleVoicings(chord,rootPC,fMin,fMax);
+    if(!feasible.length) continue;
+    const ch=feasible[rnd(feasible.length)];
+    G.chordHistory.push(chord.sym);
+    G.chordRootHistory.push(key);
+    return {
+      type:'chord-id', chord, rootPC,
+      dots:ch.voicing.map(p=>({s:p.s,f:p.f,color:'#dd6600',lbl:''})),
+      answer:chord.sym, sounds:ch.voicing
+    };
+  }
+  // Fallback: ignore history
+  const chord=CHORDS[rnd(CHORDS.length)],rootPC=rnd(12);
+  const fb=allFeasibleVoicings(chord,rootPC,0,12);
+  if(fb.length){ const ch=fb[rnd(fb.length)]; return {type:'chord-id',chord,rootPC,dots:ch.voicing.map(p=>({s:p.s,f:p.f,color:'#dd6600',lbl:''})),answer:chord.sym,sounds:ch.voicing}; }
+  return {type:'chord-id',chord,rootPC,dots:[{s:3,f:5,color:'#dd6600',lbl:''}],answer:chord.sym,sounds:[{s:3,f:5}]};
+}
+
+function genScaleQ(boxChoice){
+  for(let attempt=0;attempt<200;attempt++){
+    // Max 2 per scale type; never same type+rootPC twice
+    const typePool=SCALES.filter(sc=>G.scaleHistory.filter(n=>n===sc.n).length<2);
+    const pool=typePool.length?typePool:SCALES;
+    const scale=pool[rnd(pool.length)];
+    const rootPC=rnd(12);
+    const key=scale.n+':'+rootPC;
+    if(G.scaleRootHistory.includes(key)) continue;
+    const bs=boxChoice<0?rnd(9):boxChoice;
+    const be=bs+4;
+    const scalePCs=scale.i.map(i=>(rootPC+i)%12);
+    const positions=[];
+    for(let s=0;s<6;s++)
+      for(let f=bs;f<=be;f++){
+        if(f<0||f>12) continue;
+        const pc=notePC(s,f);
+        if(scalePCs.includes(pc)) positions.push({s,f,pc,isR:pc===rootPC});
+      }
+    if(!positions.some(p=>p.isR)){
+      let found=false;
+      for(let s=0;s<6&&!found;s++)
+        for(let f=bs;f<=be;f++)
+          if(f>=0&&f<=12&&notePC(s,f)===rootPC){ positions.push({s,f,pc:rootPC,isR:true}); found=true; break; }
+    }
+    // Remove duplicate MIDI pitches (same note on two strings in same box)
+    const midiSeen=new Set();
+    const deduped=positions.filter(p=>{
+      const m=noteMidi(p.s,p.f);
+      if(midiSeen.has(m)) return false;
+      midiSeen.add(m); return true;
+    });
+    G.scaleHistory.push(scale.n);
+    G.scaleRootHistory.push(key);
+    return {
+      type:'scale',scale,rootPC,bs,be,
+      dots:deduped.map(p=>({s:p.s,f:p.f,color:p.isR?'#dd2222':'#cc8800',lbl:p.isR?'R':''})),
+      answer:scale.n,sounds:deduped
+    };
+  }
+  // Fallback: ignore history, just generate a valid scale question
+  const scale=SCALES[rnd(SCALES.length)],rootPC=rnd(12);
+  const bs=boxChoice<0?rnd(9):boxChoice,be=bs+4;
+  const scalePCs=scale.i.map(i=>(rootPC+i)%12);
+  const positions=[];
+  for(let s=0;s<6;s++)
+    for(let f=bs;f<=be;f++){
+      if(f<0||f>12) continue;
+      const pc=notePC(s,f);
+      if(scalePCs.includes(pc)) positions.push({s,f,pc,isR:pc===rootPC});
+    }
+  const midiSeen=new Set();
+  const deduped=positions.filter(p=>{ const m=noteMidi(p.s,p.f); if(midiSeen.has(m)) return false; midiSeen.add(m); return true; });
+  return {type:'scale',scale,rootPC,bs,be,dots:deduped.map(p=>({s:p.s,f:p.f,color:p.isR?'#dd2222':'#cc8800',lbl:p.isR?'R':''})),answer:scale.n,sounds:deduped};
+}
+
+// ============================================================
+// DISPLAY
+// ============================================================
+const Q_LABELS={
+  'note-id':     'IDENTIFY THE NOTE',
+  'interval-id': 'IDENTIFY THE INTERVAL  ·  R = ROOT',
+  'chord-id':    'IDENTIFY THE CHORD',
+};
+
+function displayQuestion(q){
+  const svg=document.getElementById('fb-svg');
+  clearDots(svg);
+  if(q.type==='scale') addBoxHighlight(svg,q.bs,q.be);
+  q.dots.forEach(d=>placeDot(svg,d.s,d.f,d.color,d.lbl));
+  let label=Q_LABELS[G.mode]||'';
+  if(q.type==='scale'){
+    const boxStr=q.bs===0?'Open (0–4)':q.bs+' ('+q.bs+'–'+q.be+')';
+    label='IDENTIFY THE SCALE  ·  R = ROOT  ·  Box '+boxStr;
+  }
+  document.getElementById('q-text').textContent=label;
+  if(q.type==='note') playNote(q.dots[0].s,q.dots[0].f);
+}
+
+function buildAnsButtons(mode){
+  if(['note-con','interval-con','chord-con','scale-con'].includes(mode)) return;
+  const c=document.getElementById('ans-btns');
+  c.innerHTML=''; c.className='ans-grid';
+  function mkBtn(lbl,val){
+    const b=document.createElement('button');
+    b.className='ans-btn'; b.textContent=lbl; b.dataset.v=String(val);
+    b.addEventListener('click',()=>handleAnswer(val));
+    return b;
+  }
+  if(mode==='note-id'){
+    c.classList.add('g6');
+    for(let i=0;i<12;i++) c.appendChild(mkBtn(noteButtonLabel(i),i));
+  } else if(mode==='interval-id'){
+    c.classList.add('g6');
+    INTERVALS.forEach(iv=>c.appendChild(mkBtn(iv.n,iv.n)));
+  } else if(mode==='chord-id'){
+    c.classList.add('gcustom');
+    const r1=document.createElement('div'); r1.className='ans-row';
+    const r2=document.createElement('div'); r2.className='ans-row';
+    CHORDS.slice(0,4).forEach(ch=>r1.appendChild(mkBtn(ch.sym,ch.sym)));
+    CHORDS.slice(4).forEach(ch=>r2.appendChild(mkBtn(ch.sym,ch.sym)));
+    c.appendChild(r1); c.appendChild(r2);
+  } else if(mode==='scale-id'){
+    c.classList.add('g3');
+    SCALES.forEach(sc=>c.appendChild(mkBtn(sc.n,sc.n)));
+  }
+}
+
+// ============================================================
+// GAME STATE
+// ============================================================
+const G={
+  name:'',mode:'note-id',round:0,errors:0,
+  currentQ:null,timer:0,tInt:null,paused:false,
+  done:false,mercyUsed:false,locked:false,
+  wrongCount:0,
+  noteHistory:[],notePosHistory:[],
+  intervalHistory:[],intervalRootHistory:[],
+  chordHistory:[],chordRootHistory:[],
+  scaleHistory:[],scaleRootHistory:[],
+  boxChoice:-1,
+  // Construction state
+  inConstruction:false,
+  playerDots:[],     // {s,f,color,lbl,role} placed by player
+  fixedDots:[],      // pre-placed dots (not removable)
+  missingHints:[],   // orange hint positions after wrong SUBMIT
+  chordRolesLeft:[], // remaining roles to place (chord-con)
+  nextChordRole:null
+};
+
+// ============================================================
+// MK EFFECTS
+// ============================================================
+function flashScreen(r,g,b,a=.45,dur=280){
+  const el=document.getElementById('screen-flash');
+  el.style.background=`rgba(${r},${g},${b},${a})`;
+  el.style.display='block';
+  el.animate([{opacity:1},{opacity:0}],{duration:dur,fill:'forwards'}).onfinish=()=>{ el.style.display='none'; };
+}
+function shakeScreen(){
+  document.body.classList.remove('shake');
+  void document.body.offsetWidth;
+  document.body.classList.add('shake');
+  setTimeout(()=>document.body.classList.remove('shake'),460);
+}
+function showFight(modeLabel){
+  const ov=document.getElementById('fight-overlay');
+  document.getElementById('fight-mode-lbl').textContent=modeLabel;
+  document.getElementById('fight-word').textContent='FIGHT!';
+  ov.style.display='flex';
+  flashScreen(255,60,0,.18,600);
+  setTimeout(()=>{
+    ov.style.animation='fadeOut .35s forwards';
+    setTimeout(()=>{ ov.style.display='none'; ov.style.animation=''; },350);
+  },1300);
+}
+function updateHPBar(){
+  const fill=document.getElementById('prog');
+  const pct=((G.round-1)/10*100);
+  fill.style.width=pct+'%';
+  document.getElementById('hpbar-q').textContent=(G.round-1)+'/10';
+  fill.className='hpbar-fill'+(G.errors>=11?' danger':G.errors>=6?' warn':'');
+}
+
+// ============================================================
+// ANSWER HANDLING
+// ============================================================
+function handleAnswer(val){
+  if(G.locked||G.paused||G.done) return;
+  G.locked=true;
+  const q=G.currentQ;
+  const ok=String(val)===String(q.answer);
+  const btns=[...document.querySelectorAll('.ans-btn')];
+  btns.forEach(b=>b.disabled=true);
+  if(ok){
+    btns.forEach(b=>{ if(String(b.dataset.v)===String(q.answer)) b.classList.add('correct'); });
+    if(!G.mercyUsed){ flashScreen(0,180,60,.15,400); }
+    showFeedback(G.mercyUsed?'MERCY...':'FLAWLESS!',G.mercyUsed?'mercy-cls':'correct');
+    if(q.type==='interval') q.sounds.forEach((p,i)=>playNote(p.s,p.f,i*.35));
+    else if(q.type==='chord-id') playChord(q.sounds);
+    else if(q.type==='scale') playScaleSeq(q.sounds,q.rootPC);
+    setTimeout(nextQuestion,900);
+  } else {
+    G.errors++;
+    G.wrongCount++;
+    updateMercyBtn();
+    updateStats();
+    btns.forEach(b=>{ if(String(b.dataset.v)===String(val)) b.classList.add('wrong'); });
+    showFeedback('BRUTALITY!','wrong');
+    flashScreen(220,0,0,.5,350);
+    shakeScreen();
+    setTimeout(()=>{
+      if(!G.done){ btns.forEach(b=>{ b.disabled=false; b.classList.remove('wrong'); }); G.locked=false; }
+    },650);
+  }
+}
+
+function showFeedback(txt,cls){
+  const el=document.getElementById('fb-overlay');
+  el.textContent=txt; el.className=cls+' show';
+  setTimeout(()=>{ el.className=''; },900);
+}
+
+// ============================================================
+// GAME FLOW
+// ============================================================
+function startGame(){
+  unlockIOSAudio();
+  G.name=document.getElementById('inp-name').value.trim();
+  G.mode=document.getElementById('sel-mode').value;
+  G.boxChoice=parseInt(document.getElementById('sel-box').value);
+  G.round=0; G.errors=0; G.done=false; G.paused=false;
+  G.locked=false; G.wrongCount=0; G.mercyUsed=false;
+  G.noteHistory=[]; G.notePosHistory=[];
+  G.intervalHistory=[]; G.intervalRootHistory=[];
+  G.chordHistory=[]; G.chordRootHistory=[];
+  G.scaleHistory=[]; G.scaleRootHistory=[];
+  G.inConstruction=['note-con','interval-con','chord-con','scale-con'].includes(G.mode);
+  G.playerDots=[]; G.fixedDots=[]; G.missingHints=[];
+  G.chordRolesLeft=[]; G.nextChordRole=null;
+  document.getElementById('btn-submit').style.display=(G.inConstruction&&G.mode!=='interval-con')?'inline-block':'none';
+  const mn={'note-id':'NOTE ID','interval-id':'INTERVAL ID','chord-id':'CHORD ID','scale-id':'SCALE ID'};
+  const modeLabel=mn[G.mode]||G.mode.toUpperCase();
+  document.getElementById('st-mode').textContent=modeLabel;
+  document.getElementById('btn-pause').textContent='II PAUSE';
+  buildFretboard(document.getElementById('fb-svg'));
+  buildAnsButtons(G.mode);
+  showScreen('s-game');
+  startTimer();
+  showFight(modeLabel);
+  nextQuestion();
+}
+
+function nextQuestion(){
+  G.locked=false; G.wrongCount=0; G.mercyUsed=false;
+  G.playerDots=[]; G.fixedDots=[]; G.missingHints=[];
+  G.chordRolesLeft=[]; G.nextChordRole=null; // kept for compat
+  updateMercyBtn();
+  if(G.round>=10){ endGame(); return; }
+  G.round++;
+  updateStats();
+  let q;
+  if(G.mode==='note-id')          q=genNoteQ();
+  else if(G.mode==='interval-id') q=genIntervalQ();
+  else if(G.mode==='chord-id')    q=genChordQ(G.boxChoice);
+  else if(G.mode==='scale-id')    q=genScaleQ(G.boxChoice);
+  else if(G.mode==='note-con')    q=genNoteConQ();
+  else if(G.mode==='interval-con')q=genIntervalConQ();
+  else if(G.mode==='chord-con')   q=genChordConQ(G.boxChoice);
+  else if(G.mode==='scale-con')   q=genScaleConQ(G.boxChoice);
+  G.currentQ=q;
+  if(G.inConstruction){
+    buildConButtons(q);
+    displayConstructionQuestion(q);
+  } else {
+    document.querySelectorAll('.ans-btn').forEach(b=>{
+      b.disabled=false; b.className='ans-btn';
+      if(G.mode==='note-id') b.textContent=noteButtonLabel(parseInt(b.dataset.v));
+    });
+    displayQuestion(q);
+  }
+}
+
+function endGame(){
+  G.done=true;
+  clearInterval(G.tInt);
+  const e=G.errors, t=formatTime(G.timer);
+  document.getElementById('fin-score').textContent=e;
+  document.getElementById('fin-time').textContent='TIME: '+t;
+  // Victory message based on errors
+  const vmap=[
+    [0, 'FLAWLESS VICTORY!','flawless'],
+    [2, 'EXCELLENT FIGHTER!','vgreen'],
+    [5, 'SKILLED WARRIOR!','vred'],
+    [10,'FIGHT HARDER...','vred'],
+    [19,'FINISH HIM!','vred'],
+    [999,'FATALITY!','vred']
+  ];
+  const [,msg,cls]=vmap.find(([max])=>e<=max)||[999,'FATALITY!','vred'];
+  const vt=document.getElementById('v-text');
+  vt.textContent=msg; vt.className='vtext '+cls;
+  document.getElementById('btn-save').disabled=false;
+  document.getElementById('btn-save').textContent='💀 HALL OF FAME';
+  document.querySelector('.score-lbl').textContent='ERRORS';
+  showScreen('s-results');
+  // Load current HOF (without new entry) — _hofGen ensures btn-save cancels this if pressed
+  loadHOF(G.mode,'hof-body','hof-title','hof-load');
+}
+
+function updateStats(){
+  document.getElementById('st-q').textContent=G.round+'/10';
+  document.getElementById('st-err').textContent=G.errors;
+  updateHPBar();
+}
+
+function startTimer(){
+  clearInterval(G.tInt); G.timer=0;
+  G.tInt=setInterval(()=>{ if(!G.paused){ G.timer++; document.getElementById('st-time').textContent=formatTime(G.timer); } },1000);
+}
+function formatTime(s){ return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0'); }
+
+// ============================================================
+// MERCY
+// ============================================================
+function updateMercyBtn(){
+  const btn=document.getElementById('btn-mercy');
+  G.wrongCount>=2?btn.classList.add('rdy'):btn.classList.remove('rdy');
+}
+
+function setupMercy(){
+  const btn=document.getElementById('btn-mercy');
+  const svg=document.getElementById('fb-svg');
+  let hT=null,revealed=false;
+  const show=()=>{
+    if(G.wrongCount<2||G.done||!G.currentQ) return;
+    const q=G.currentQ;
+    revealed=true; G.mercyUsed=true;
+    clearDots(svg);
+    if(q.type==='scale'||q.type==='scale-con') addBoxHighlight(svg,q.bs,q.be);
+    if(G.inConstruction){
+      // Show complete solution
+      document.getElementById('q-text').textContent='☠ MERCY: SOLUTION';
+      if(q.type==='note-con'){
+        q.correctPositions.forEach(p=>placeDot(svg,p.s,p.f,'#aa6600','',1));
+      } else if(q.type==='interval-con'){
+        placeDot(svg,q.rootPos.s,q.rootPos.f,'#dd2222','R',1);
+        q.targetPositions.forEach(p=>placeDot(svg,p.s,p.f,'#aa6600',q.interval.n,1));
+      } else if(q.type==='chord-con'){
+        if(G.boxChoice>=0) addBoxHighlight(svg,G.boxChoice,G.boxChoice+4);
+        const fMin=G.boxChoice<0?0:G.boxChoice;
+        const fMax=G.boxChoice<0?12:G.boxChoice+4;
+        // Only show voicings that include the pre-placed note at its exact position
+        const feas=allFeasibleVoicings(q.chord,q.rootPC,fMin,fMax)
+          .filter(v=>v.voicing.some(p=>p.s===q.prePos.s&&p.f===q.prePos.f));
+        // Fallback: any feasible voicing if none includes pre-placed position exactly
+        const fallFeas=feas.length?feas:allFeasibleVoicings(q.chord,q.rootPC,fMin,fMax);
+        const sol=fallFeas.length?fallFeas[rnd(fallFeas.length)]:null;
+        if(sol){
+          sol.voicing.forEach(p=>{
+            const lbl=chordRoleLabel(notePC(p.s,p.f),q.chord,q.rootPC);
+            placeDot(svg,p.s,p.f,'#aa6600',lbl,1);
+          });
+        }
+      } else if(q.type==='scale-con'){
+        q.correctPositions.forEach(p=>placeDot(svg,p.s,p.f,p.isR?'#dd2222':'#aa6600',p.isR?'R':'',1));
+      }
+    } else {
+      const ansLbl=q.type==='note'?noteName(q.answer):q.answer;
+      document.getElementById('q-text').textContent='☠ MERCY: '+ansLbl;
+      q.dots.forEach(d=>{
+        const lbl=q.type==='note'?noteName(notePC(d.s,d.f)):d.lbl;
+        placeDot(svg,d.s,d.f,'#aa6600',lbl,1);
+      });
+      document.querySelectorAll('.ans-btn').forEach(b=>b.disabled=true);
+    }
+  };
+  const hide=()=>{
+    clearTimeout(hT);
+    if(revealed){
+      revealed=false;
+      const q=G.currentQ;
+      if(q&&!G.done){
+        if(G.inConstruction){
+          redrawConDots();
+                if(!G.locked) G.locked=false;
+        } else {
+          clearDots(svg);
+          if(q.type==='scale') addBoxHighlight(svg,q.bs,q.be);
+          q.dots.forEach(d=>placeDot(svg,d.s,d.f,d.color,d.lbl));
+          let label=Q_LABELS[G.mode]||'';
+          if(q.type==='scale'){ const bs=q.bs===0?'Open (0–4)':q.bs+' ('+q.bs+'–'+q.be+')'; label='IDENTIFY THE SCALE  ·  R = ROOT  ·  Box '+bs; }
+          document.getElementById('q-text').textContent=label;
+          if(!G.locked) document.querySelectorAll('.ans-btn').forEach(b=>b.disabled=false);
+        }
+      }
+    }
+  };
+  btn.addEventListener('mousedown',()=>{ hT=setTimeout(show,200); });
+  btn.addEventListener('mouseup',hide); btn.addEventListener('mouseleave',hide);
+  btn.addEventListener('touchstart',e=>{ e.preventDefault(); hT=setTimeout(show,200); });
+  btn.addEventListener('touchend',hide);
+}
+
+// ============================================================
+// LEADERBOARD
+// ============================================================
+function getKey(m){ return 'mf_'+m; }
+function getModeLongName(m){
+  return {'note-id':'Note Identification','interval-id':'Interval Identification','chord-id':'Chord Identification','scale-id':'Scale Identification'}[m]||m;
+}
+async function saveScore(mode,name,errors,time){
+  const entry={name:name||'UNKNOWN',errors,time,date:new Date().toLocaleDateString()};
+  if(useFirebase){
+    try{ await fbDB.ref('leaderboards/'+mode).push(entry); return; }
+    catch(e){ console.error('Firebase save error:',e); }
+  }
+  const k=getKey(mode);
+  let d=JSON.parse(localStorage.getItem(k)||'[]');
+  d.push(entry);
+  d.sort((a,b)=>(a.errors??99)-(b.errors??99)||a.time-b.time);
+  localStorage.setItem(k,JSON.stringify(d.slice(0,10)));
+}
+
+let _hofGen=0;
+async function loadHOF(mode,bodyId='hof-body',titleId='hof-title',loadId='hof-load'){
+  const myGen=++_hofGen;
+  const titleEl=document.getElementById(titleId);
+  const loadEl=document.getElementById(loadId);
+  const bodyEl=document.getElementById(bodyId);
+  if(titleEl) titleEl.textContent='HALL OF FAME — '+getModeLongName(mode).toUpperCase();
+  if(loadEl){ loadEl.style.display='block'; loadEl.textContent='Loading...'; }
+  if(bodyEl) bodyEl.innerHTML='';
+  let entries=[];
+  if(useFirebase){
+    try{
+      const snap=await fbDB.ref('leaderboards/'+mode).once('value');
+      snap.forEach(c=>entries.push(c.val()));
+      entries.sort((a,b)=>(a.errors??99)-(b.errors??99)||a.time-b.time);
+      entries=entries.slice(0,10);
+    } catch(e){ entries=getLocal(mode); }
+  } else { entries=getLocal(mode); }
+  if(loadEl) loadEl.style.display='none';
+  if(myGen!==_hofGen) return; // cancelled by newer call
+  if(bodyEl) renderHOF(entries,bodyEl);
+  const fn=document.getElementById('firebase-note');
+  if(fn) fn.innerHTML=useFirebase
+    ?'<span style="color:var(--green2)">★ Global leaderboard active</span>'
+    :'Local leaderboard only — <a href="https://console.firebase.google.com" target="_blank">set up Firebase</a> for global rankings';
+}
+function getLocal(mode){ return JSON.parse(localStorage.getItem(getKey(mode))||'[]'); }
+function renderHOF(entries,container,highlight=null){
+  if(!entries.length){ container.innerHTML='<p style="color:var(--muted);text-align:center;padding:16px;font-size:13px">No entries yet. Be the first fighter!</p>'; return; }
+  const med=['🥇','🥈','🥉'];
+  let h='<table class="hof-tbl"><tr><th>#</th><th>FIGHTER</th><th>ERRORS</th><th>TIME</th><th>DATE</th></tr>';
+  entries.forEach((e,i)=>{
+    const isNew=highlight&&e.name===highlight.name&&(e.errors??99)===highlight.errors&&e.time===highlight.time;
+    const golden=(e.errors??99)===0?'color:var(--gold)':'color:var(--text)';
+    const rowStyle=isNew?'outline:2px solid var(--red2);background:rgba(180,0,0,.15)':'';
+    const badge=isNew?` <span style="font-family:'Press Start 2P',monospace;font-size:7px;color:var(--red2);animation:pulse 1s infinite">★ NEW</span>`:'';
+    h+=`<tr style="${rowStyle}"><td class="rank">${med[i]||(i+1)}</td><td>${esc(e.name)}${badge}</td><td style="${golden}">${e.errors??'–'}</td><td>${formatTime(e.time)}</td><td style="font-size:12px;color:var(--muted)">${e.date||''}</td></tr>`;
+  });
+  h+='</table>';
+  container.innerHTML=h;
+}
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+// ============================================================
+// UI
+// ============================================================
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+function setNotation(n){
+  notation=n;
+  document.getElementById('btn-abc').classList.toggle('on',n==='ABC');
+  document.getElementById('btn-sol').classList.toggle('on',n==='SOL');
+  if(G.mode==='note-id')
+    document.querySelectorAll('.ans-btn').forEach(b=>{ const v=parseInt(b.dataset.v); if(!isNaN(v)) b.textContent=noteButtonLabel(v); });
+}
+
+// ============================================================
+// EVENTS
+// ============================================================
+
+// ============================================================
+// CONSTRUCTION — QUESTION GENERATORS
+// ============================================================
+function genNoteConQ(){
+  let l0=[],l1=[];
+  for(let pc=0;pc<12;pc++){
+    const c=G.noteHistory.filter(n=>n===pc).length;
+    if(c===0) l0.push(pc); else if(c<2) l1.push(pc);
+  }
+  let pool=l0.length?l0:(l1.length?l1:Array.from({length:12},(_,i)=>i));
+  const pc=pool[rnd(pool.length)];
+  G.noteHistory.push(pc);
+  const correctPositions=[];
+  for(let s=0;s<6;s++) for(let f=0;f<=12;f++) if(notePC(s,f)===pc) correctPositions.push({s,f});
+  return {type:'note-con',answer:pc,correctPositions};
+}
+
+function genIntervalConQ(){
+  for(let t=0;t<200;t++){
+    const l0ic=INTERVALS.filter(iv=>G.intervalHistory.filter(n=>n===iv.n).length===0);
+    const l1ic=INTERVALS.filter(iv=>G.intervalHistory.filter(n=>n===iv.n).length<2);
+    const pool=(l0ic.length?l0ic:(l1ic.length?l1ic:INTERVALS));
+    const iv=pool[rnd(pool.length)];
+    const rs=rnd(6),rf=rnd(11);
+    const key=iv.n+':'+notePC(rs,rf);
+    if(G.intervalRootHistory.includes(key)) continue;
+    const targetMidi=noteMidi(rs,rf)+iv.s;
+    const targetPositions=[];
+    for(let s=0;s<6;s++){ const f2=targetMidi-OPEN_MIDI[s]; if(f2>=0&&f2<=12) targetPositions.push({s,f:f2}); }
+    if(!targetPositions.length) continue;
+    G.intervalHistory.push(iv.n);
+    G.intervalRootHistory.push(key);
+    return {type:'interval-con',interval:iv,rootPos:{s:rs,f:rf},rootPC:notePC(rs,rf),targetMidi,targetPositions};
+  }
+  const iv=INTERVALS[rnd(INTERVALS.length)],rs=rnd(6),rf=rnd(5)+3;
+  const targetMidi=noteMidi(rs,rf)+iv.s;
+  const tp=[];
+  for(let s=0;s<6;s++){ const f2=targetMidi-OPEN_MIDI[s]; if(f2>=0&&f2<=12) tp.push({s,f:f2}); }
+  return {type:'interval-con',interval:iv,rootPos:{s:rs,f:rf},rootPC:notePC(rs,rf),targetMidi,targetPositions:tp};
+}
+
+function genChordConQ(boxChoice){
+  const fMin=boxChoice<0?0:boxChoice;
+  const fMax=boxChoice<0?12:boxChoice+4;
+  for(let attempt=0;attempt<200;attempt++){
+    const l0cc=CHORDS.filter(ch=>G.chordHistory.filter(n=>n===ch.sym).length===0);
+    const l1cc=CHORDS.filter(ch=>G.chordHistory.filter(n=>n===ch.sym).length<2);
+    const pool=l0cc.length?l0cc:(l1cc.length?l1cc:CHORDS);
+    const chord=pool[rnd(pool.length)];
+    const rootPC=rnd(12);
+    const key=chord.sym+':'+rootPC;
+    if(G.chordRootHistory.includes(key)) continue;
+    const feasible=allFeasibleVoicings(chord,rootPC,fMin,fMax);
+    if(!feasible.length) continue;
+    const ch=feasible[rnd(feasible.length)];
+    const preIdx=rnd(ch.voicing.length);
+    const prePos=ch.voicing[preIdx];
+    const prePC=notePC(prePos.s,prePos.f);
+    const correctPCs=chord.i.map(i=>(rootPC+i)%12);
+    G.chordHistory.push(chord.sym);
+    G.chordRootHistory.push(key);
+    return {type:'chord-con',chord,rootPC,prePos,prePC,correctPCs};
+  }
+  return genChordConQ(-1);
+}
+
+function genScaleConQ(boxChoice){
+  for(let attempt=0;attempt<200;attempt++){
+    const l0sc=SCALES.filter(sc=>G.scaleHistory.filter(n=>n===sc.n).length===0);
+    const l1sc=SCALES.filter(sc=>G.scaleHistory.filter(n=>n===sc.n).length<2);
+    const pool=(l0sc.length?l0sc:(l1sc.length?l1sc:SCALES));
+    const scale=pool[rnd(pool.length)];
+    const rootPC=rnd(12);
+    const key=scale.n+':'+rootPC;
+    if(G.scaleRootHistory.includes(key)) continue;
+    const bs=boxChoice<0?rnd(9):boxChoice,be=bs+4;
+    const scalePCs=scale.i.map(i=>(rootPC+i)%12);
+    const positions=[];
+    for(let s=0;s<6;s++) for(let f=bs;f<=be;f++){
+      if(f<0||f>12) continue;
+      const pc=notePC(s,f);
+      if(scalePCs.includes(pc)) positions.push({s,f,pc,isR:pc===rootPC});
+    }
+    if(!positions.some(p=>p.isR)){
+      let found=false;
+      for(let s=0;s<6&&!found;s++) for(let f=bs;f<=be;f++)
+        if(f>=0&&f<=12&&notePC(s,f)===rootPC){ positions.push({s,f,pc:rootPC,isR:true}); found=true; break; }
+    }
+    const midiSeen=new Set();
+    const correctPositions=positions.filter(p=>{ const m=noteMidi(p.s,p.f); if(midiSeen.has(m)) return false; midiSeen.add(m); return true; });
+    const rootPositions=correctPositions.filter(p=>p.isR);
+    if(!rootPositions.length) continue;
+    const rootPos=rootPositions[rnd(rootPositions.length)];
+    G.scaleHistory.push(scale.n);
+    G.scaleRootHistory.push(key);
+    return {type:'scale-con',scale,rootPC,bs,be,rootPos,correctPositions};
+  }
+  const scale=SCALES[rnd(SCALES.length)],rootPC=rnd(12);
+  const bs=boxChoice<0?rnd(9):boxChoice,be=bs+4;
+  const scalePCs=scale.i.map(i=>(rootPC+i)%12);
+  const positions=[];
+  for(let s=0;s<6;s++) for(let f=bs;f<=be;f++){
+    if(f<0||f>12) continue; const pc=notePC(s,f);
+    if(scalePCs.includes(pc)) positions.push({s,f,pc,isR:pc===rootPC});
+  }
+  const midiSeen=new Set();
+  const correctPositions=positions.filter(p=>{ const m=noteMidi(p.s,p.f); if(midiSeen.has(m)) return false; midiSeen.add(m); return true; });
+  const rootPositions=correctPositions.filter(p=>p.isR);
+  const rootPos=rootPositions.length?rootPositions[rnd(rootPositions.length)]:correctPositions[0];
+  return {type:'scale-con',scale,rootPC,bs,be,rootPos,correctPositions};
+}
+
+// ============================================================
+// CONSTRUCTION — DISPLAY & FRETBOARD INTERACTION
+// ============================================================
+function displayConstructionQuestion(q){
+  const svg=document.getElementById('fb-svg');
+  clearDots(svg);
+  G.playerDots=[];
+  G.fixedDots=[];
+  G.missingHints=[];
+
+  if(q.type==='note-con'){
+    document.getElementById('q-text').textContent='PLACE ALL  '+noteButtonLabel(q.answer)+'  ON THE FRETBOARD';
+  } else if(q.type==='interval-con'){
+    const G_svg=document.getElementById('fb-svg');
+    G.fixedDots=[{s:q.rootPos.s,f:q.rootPos.f,color:'#dd2222',lbl:'R'}];
+    document.getElementById('q-text').textContent='BUILD FROM R  ·  '+q.interval.n;
+    placeDot(G_svg,q.rootPos.s,q.rootPos.f,'#dd2222','R');
+  } else if(q.type==='chord-con'){
+    if(G.boxChoice>=0) addBoxHighlight(svg,G.boxChoice,G.boxChoice+4);
+    const preRole=chordRoleLabel(q.prePC,q.chord,q.rootPC);
+    G.fixedDots=[{s:q.prePos.s,f:q.prePos.f,color:'#884400',lbl:preRole}];
+    placeDot(svg,q.prePos.s,q.prePos.f,'#884400',preRole);
+    document.getElementById('q-text').textContent='BUILD  ·  '+q.chord.n.toUpperCase();
+  } else if(q.type==='scale-con'){
+    addBoxHighlight(svg,q.bs,q.be);
+    G.fixedDots=[{s:q.rootPos.s,f:q.rootPos.f,color:'#dd2222',lbl:'R'}];
+    placeDot(svg,q.rootPos.s,q.rootPos.f,'#dd2222','R');
+    const boxStr=q.bs===0?'Open (0–4)':q.bs+' ('+q.bs+'–'+q.be+')';
+    document.getElementById('q-text').textContent='BUILD IN BOX '+boxStr+'  ·  '+q.scale.n.toUpperCase();
+  }
+}
+
+
+
+function redrawConDots(){
+  const svg=document.getElementById('fb-svg');
+  clearDots(svg);
+  const q=G.currentQ;
+  if(q.type==='scale-con') addBoxHighlight(svg,q.bs,q.be);
+  // Fixed dots
+  G.fixedDots.forEach(d=>placeDot(svg,d.s,d.f,d.color,d.lbl));
+  // Missing hints (orange)
+  G.missingHints.forEach(d=>placeDot(svg,d.s,d.f,'#cc6600',d.lbl||'',0.75));
+  // Player dots
+  G.playerDots.forEach(d=>placeDot(svg,d.s,d.f,d.color,d.lbl));
+}
+
+function getSVGCoordsTouch(touch){
+  const svg=document.getElementById('fb-svg');
+  const rect=svg.getBoundingClientRect();
+  return {x:(touch.clientX-rect.left)*(960/rect.width),y:(touch.clientY-rect.top)*(292/rect.height)};
+}
+function getSVGCoords(e){
+  const svg=document.getElementById('fb-svg');
+  const rect=svg.getBoundingClientRect();
+  return {x:(e.clientX-rect.left)*(960/rect.width),y:(e.clientY-rect.top)*(292/rect.height)};
+}
+
+function coordsToSF(x,y){
+  const s=Math.max(0,Math.min(5,Math.round((y-FT)/SH)));
+  const f=x<NUT?0:Math.max(1,Math.min(12,Math.floor((x-NUT)/FW)+1));
+  return {s,f};
+}
+
+function isFixed(s,f){ return G.fixedDots.some(d=>d.s===s&&d.f===f); }
+function playerDotAt(s,f){ return G.playerDots.find(d=>d.s===s&&d.f===f); }
+function hintAt(s,f){ return G.missingHints.find(d=>d.s===s&&d.f===f); }
+
+function handleFretboardClick(s,f){
+  if(G.locked||G.paused||G.done||!G.inConstruction) return;
+  const q=G.currentQ; // must be first — avoids TDZ with const
+  if(isFixed(s,f)){
+    // Tap on pre-placed dot: play sound for R (interval/scale) or any (chord)
+    const fd=G.fixedDots.find(d=>d.s===s&&d.f===f);
+    if(fd){
+      if(q.type==='chord-con') playNote(s,f);
+      else if(fd.lbl==='R'&&(q.type==='interval-con'||q.type==='scale-con')) playNote(s,f);
+    }
+    return;
+  }
+  const existing=playerDotAt(s,f);
+  const hint=hintAt(s,f);
+
+  if(existing){
+    // Remove player dot (red or green)
+    G.playerDots=G.playerDots.filter(d=>!(d.s===s&&d.f===f));
+    // If chord-con: return role to chordRolesLeft
+    if(q.type==='chord-con'&&existing.role){
+      const idx=q.remainingRoles.indexOf(existing.role);
+      // Re-insert in correct order
+      G.chordRolesLeft=q.remainingRoles.filter(r=>![...G.playerDots.map(d=>d.role)].includes(r));
+      G.nextChordRole=G.chordRolesLeft[0]||null;
+    }
+    redrawConDots();
+    return;
+  }
+
+  if(hint){
+    // Convert orange hint to player green dot
+    G.missingHints=G.missingHints.filter(d=>!(d.s===s&&d.f===f));
+    const lbl=hint.lbl||'';
+    G.playerDots.push({s,f,color:'#00cc44',lbl});
+    playNote(s,f);
+    redrawConDots();
+    return;
+  }
+
+  // Place new dot
+  if(q.type==='note-con'){
+    G.playerDots.push({s,f,color:'#00cc44',lbl:''});
+    playNote(s,f);
+  } else if(q.type==='interval-con'){
+    if(G.locked) return;
+    G.locked=true;
+    G.playerDots=[{s,f,color:'#00cc44',lbl:''}];
+    redrawConDots();
+    // Inline check — bypass handleSubmit entirely
+    const targetMidi=noteMidi(q.rootPos.s,q.rootPos.f)+q.interval.s;
+    if(noteMidi(s,f)===targetMidi){
+      G.playerDots[0].color='#00ff41'; redrawConDots();
+      if(!G.mercyUsed) flashScreen(0,180,60,.15,400);
+      showFeedback(G.mercyUsed?'MERCY...':'FLAWLESS!',G.mercyUsed?'mercy-cls':'correct');
+      playNote(q.rootPos.s,q.rootPos.f,0);
+      playNote(s,f,.35);
+      setTimeout(nextQuestion,1000);
+    } else {
+      G.errors++; G.wrongCount++;
+      updateMercyBtn(); updateStats();
+      G.playerDots[0].color='#cc0000'; redrawConDots();
+      showFeedback('BRUTALITY!','wrong');
+      flashScreen(220,0,0,.5,350); shakeScreen();
+      setTimeout(()=>{ if(!G.done){ G.playerDots=[]; redrawConDots(); G.locked=false; } },700);
+    }
+    return;
+  } else if(q.type==='chord-con'){
+    // Box constraint
+    if(G.boxChoice>=0&&(f<G.boxChoice||f>G.boxChoice+4)) return;
+    // Fixed dot string: always block
+    if(G.fixedDots.some(d=>d.s===s)) return;
+    // Same string as existing player dot: replace it
+    const sameStr=G.playerDots.find(d=>d.s===s);
+    if(sameStr){
+      G.playerDots=G.playerDots.filter(d=>d.s!==s);
+    } else if(G.playerDots.length>=q.chord.i.length-1){
+      return; // max notes reached, no replacement
+    }
+    // No role label on player dots (player must identify by ear)
+    G.playerDots.push({s,f,color:'#00cc44',lbl:''});
+    playNote(s,f);
+  } else if(q.type==='scale-con'){
+    G.playerDots.push({s,f,color:'#00cc44',lbl:''});
+    playNote(s,f);
+  }
+
+  redrawConDots();
+}
+
+// ============================================================
+// CONSTRUCTION — SUBMIT & VERIFY
+// ============================================================
+function handleSubmit(){
+  if(G.locked||G.paused||G.done||!G.inConstruction) return;
+  G.locked=true;
+  const q=G.currentQ;
+  let ok=false;
+  let wrongDots=[];
+  let missingPositions=[];
+
+  if(q.type==='note-con'){
+    const correctKeys=new Set(q.correctPositions.map(p=>p.s+':'+p.f));
+    const playerKeys=new Set(G.playerDots.map(d=>d.s+':'+d.f));
+    wrongDots=G.playerDots.filter(d=>!correctKeys.has(d.s+':'+d.f));
+    missingPositions=q.correctPositions.filter(p=>!playerKeys.has(p.s+':'+p.f));
+    ok=wrongDots.length===0&&missingPositions.length===0;
+  } else if(q.type==='interval-con'){
+    if(G.playerDots.length===0){
+      missingPositions=[{s:-1,f:-1}]; // sentinel: nothing placed
+    } else {
+      wrongDots=G.playerDots.filter(d=>noteMidi(d.s,d.f)!==q.targetMidi);
+      ok=G.playerDots.length===1&&wrongDots.length===0;
+    }
+  } else if(q.type==='chord-con'){
+    const allPos=[...G.fixedDots,...G.playerDots];
+    const placedPCs=allPos.map(d=>notePC(d.s,d.f));
+    const requiredPCs=new Set(q.correctPCs);
+    const expectedCount=q.chord.i.length;
+    if(allPos.length<expectedCount){
+      missingPositions=[{s:-1,f:-1}]; // too few notes
+    } else {
+      wrongDots=G.playerDots.filter(d=>!requiredPCs.has(notePC(d.s,d.f)));
+      // Check all required PCs covered
+      const missingPC=q.correctPCs.filter(pc=>!placedPCs.includes(pc));
+      if(missingPC.length) missingPositions=[{s:-1,f:-1}];
+      ok=wrongDots.length===0&&missingPC.length===0&&allPos.length===expectedCount;
+    }
+  } else if(q.type==='scale-con'){
+    const scalePCsSet=new Set(q.scale.i.map(i=>(q.rootPC+i)%12));
+    // Wrong: dot outside box or has a non-scale PC
+    wrongDots=G.playerDots.filter(d=>d.f<q.bs||d.f>q.be||!scalePCsSet.has(notePC(d.s,d.f)));
+    // Covered PCs = fixed (R) + correct player dots
+    const covPC=new Set(G.fixedDots.map(d=>notePC(d.s,d.f)));
+    G.playerDots.filter(d=>d.f>=q.bs&&d.f<=q.be&&scalePCsSet.has(notePC(d.s,d.f))).forEach(d=>covPC.add(notePC(d.s,d.f)));
+    const missingPCList=[...scalePCsSet].filter(pc=>!covPC.has(pc));
+    if(missingPCList.length){
+      // Orange hints: first correct position for each missing PC
+      missingPositions=missingPCList.map(pc=>q.correctPositions.find(p=>notePC(p.s,p.f)===pc&&!p.isR)).filter(Boolean);
+      if(!missingPositions.length) missingPositions=[{s:-1,f:-1}];
+    }
+    ok=wrongDots.length===0&&missingPCList.length===0;
+  }
+
+  if(ok){
+    // Correct!
+    showFeedback(G.mercyUsed?'MERCY...':'FLAWLESS!',G.mercyUsed?'mercy-cls':'correct');
+    if(!G.mercyUsed) flashScreen(0,180,60,.15,400);
+    // Play result sound
+    if(q.type==='interval-con'){
+      playNote(q.rootPos.s,q.rootPos.f,0);
+      if(G.playerDots.length) playNote(G.playerDots[0].s,G.playerDots[0].f,.35);
+    } else if(q.type==='chord-con'){
+      const allPos=[...G.fixedDots,...G.playerDots];
+      playChord(allPos);
+    } else if(q.type==='scale-con'){
+      const allPos=[...G.fixedDots,...G.playerDots];
+      playScaleSeq(allPos,q.rootPC);
+    }
+    // Color all dots green before advancing
+    G.playerDots.forEach(d=>d.color='#00ff41');
+    G.fixedDots.forEach(d=>d.color='#00cc44');
+    redrawConDots();
+    setTimeout(nextQuestion,1000);
+  } else {
+    // Wrong
+    G.errors++;
+    G.wrongCount++;
+    updateMercyBtn();
+    updateStats();
+    showFeedback('BRUTALITY!','wrong');
+    flashScreen(220,0,0,.5,350);
+    shakeScreen();
+    // Mark wrong dots red
+    G.playerDots.forEach(d=>{
+      if(wrongDots.some(w=>w.s===d.s&&w.f===d.f)) d.color='#cc0000';
+    });
+    // Show missing as orange hints
+    G.missingHints=missingPositions
+      .filter(p=>p.s>=0)
+      .map(p=>({s:p.s,f:p.f,lbl:q.type==='chord-con'?'':''}));
+    redrawConDots();
+    setTimeout(()=>{ if(!G.done) G.locked=false; },700);
+  }
+}
+
+// ============================================================
+// CONSTRUCTION — ANS BUTTONS DISPLAY
+// ============================================================
+function buildConButtons(q){
+  const c=document.getElementById('ans-btns');
+  c.innerHTML=''; c.className='ans-grid';
+  function mkDisabled(lbl,isTarget){
+    const b=document.createElement('div');
+    b.className='ans-btn'+(isTarget?' target':'');
+    b.textContent=lbl;
+    return b;
+  }
+  if(q.type==='note-con'){
+    c.classList.add('g6');
+    for(let i=0;i<12;i++) c.appendChild(mkDisabled(noteButtonLabel(i),i===q.answer));
+  } else if(q.type==='interval-con'){
+    c.classList.add('g6');
+    INTERVALS.forEach(iv=>c.appendChild(mkDisabled(iv.n,iv.n===q.interval.n)));
+  } else if(q.type==='chord-con'){
+    c.classList.add('gcustom');
+    const r1=document.createElement('div'); r1.className='ans-row';
+    const r2=document.createElement('div'); r2.className='ans-row';
+    CHORDS.slice(0,4).forEach(ch=>r1.appendChild(mkDisabled(ch.sym,ch.sym===q.chord.sym)));
+    CHORDS.slice(4).forEach(ch=>r2.appendChild(mkDisabled(ch.sym,ch.sym===q.chord.sym)));
+    c.appendChild(r1); c.appendChild(r2);
+  } else if(q.type==='scale-con'){
+    c.classList.add('g3');
+    SCALES.forEach(sc=>c.appendChild(mkDisabled(sc.n,sc.n===q.scale.n)));
+  }
+}
+
+
+// ============================================================
+// iOS AUDIO UNLOCK (global — must be callable from startGame)
+// ============================================================
+let _iosUnlocked=false;
+function unlockIOSAudio(){
+  if(_iosUnlocked) return; _iosUnlocked=true;
+  try{
+    const ctx=getCtx();
+    if(ctx.state==='suspended') ctx.resume();
+    // Warm up WebAudio
+    const buf=ctx.createBuffer(1,1,ctx.sampleRate);
+    const src=ctx.createBufferSource();
+    src.buffer=buf; src.connect(getMaster()); src.start(0);
+  }catch(e){}
+  // iOS silent switch bypass:
+  // Route WebAudio through MediaStreamDestination → <audio> element.
+  // iOS treats <audio>.srcObject as "media playback" → bypasses silent switch.
+  // A keepAlive oscillator (inaudible) keeps the stream active between notes.
+  try{
+    const ctx=getCtx();
+    const el=document.getElementById('ios-silent');
+    if(!el) return;
+    if(_msDest){
+      // Add inaudible keepAlive oscillator to hold the stream active
+      try{
+        const ka=ctx.createOscillator();
+        const kg=ctx.createGain();
+        kg.gain.value=0.00001; // effectively silent — just keeps stream alive
+        ka.connect(kg); kg.connect(_msDest); ka.start();
+      }catch(e){}
+      el.srcObject=_msDest.stream;
+      el.play().catch(()=>{ _iosFallback(el); });
+    } else { _iosFallback(el); }
+  }catch(e){ try{ _iosFallback(document.getElementById('ios-silent')); }catch(e2){} }
+}
+function _iosFallback(el){
+  // Fallback: programmatic silent WAV blob
+  try{
+    const sr=8000,n=8000;
+    const ab=new ArrayBuffer(44+n);
+    const dv=new DataView(ab);
+    const ws=(o,s)=>{for(let i=0;i<s.length;i++)dv.setUint8(o+i,s.charCodeAt(i));};
+    ws(0,'RIFF'); dv.setUint32(4,36+n,true); ws(8,'WAVEfmt ');
+    dv.setUint32(16,16,true); dv.setUint16(20,1,true); dv.setUint16(22,1,true);
+    dv.setUint32(24,sr,true); dv.setUint32(28,sr,true);
+    dv.setUint16(32,1,true); dv.setUint16(34,8,true);
+    ws(36,'data'); dv.setUint32(40,n,true);
+    for(let i=0;i<n;i++) dv.setUint8(44+i,128);
+    const url=URL.createObjectURL(new Blob([ab],{type:'audio/wav'}));
+    if(el){ el.src=url; el.loop=true; el.volume=0.01; el.play().catch(()=>{}); }
+  }catch(e){}
+}
+
+// ============================================================
+// CHORD VOICING SYSTEM
+// String index: 0=high-e(E4,MIDI64) … 5=low-E(E2,MIDI40)
+// All specs list strings from BASS (lowest pitch) to TREBLE (highest pitch)
+// ============================================================
+const VOICING_SPECS = [
+  // Triads – 3 adjacent strings, inversions 0/1/2
+  {type:'triad',  strings:[2,1,0]},  // G-B-e
+  {type:'triad',  strings:[3,2,1]},  // D-G-B
+  {type:'triad',  strings:[4,3,2]},  // A-D-G
+  {type:'triad',  strings:[5,4,3]},  // E-A-D
+  // Drop 2 – 4 adjacent strings, inversions 0/1/2/3
+  {type:'drop2',  strings:[3,2,1,0]}, // D-G-B-e
+  {type:'drop2',  strings:[4,3,2,1]}, // A-D-G-B
+  {type:'drop2',  strings:[5,4,3,2]}, // E-A-D-G
+  // Drop 3 – 4 strings, one skipped, inversions 0/1/2/3
+  {type:'drop3',  strings:[4,2,1,0]}, // A-G-B-e    (skip D)   standard
+  {type:'drop3',  strings:[5,3,2,1]}, // E-D-G-B    (skip A)   standard
+  {type:'drop3',  strings:[5,4,3,1]}, // E-A-D-B    (skip G)   non-standard
+  {type:'drop3',  strings:[4,3,2,0]}, // A-D-G-e    (skip B)   non-standard
+  // Drop 2+4 – 4 strings, skip middle, inversions 0/1/2/3
+  {type:'drop24', strings:[4,3,1,0]}, // A-D-B-e    (skip G)
+  {type:'drop24', strings:[5,4,2,1]}, // E-A-G-B    (skip D)
+];
+
+// Role label for a chord tone PC
+function chordRoleLabel(pc, chord, rootPC){
+  const lbl=chord.i.length<=3?['R','3','5']:['R','3','5','7'];
+  const idx=chord.i.findIndex(iv=>(rootPC+iv)%12===pc);
+  return idx>=0?lbl[idx]:'';
+}
+
+// Returns interval offsets from root for each string position (bass→treble)
+function getVoicingIntervals(chord, inv, type){
+  const iv=chord.i, n=iv.length, i=inv;
+  switch(type){
+    case 'triad':  return [iv[i%n], iv[(i+1)%n], iv[(i+2)%n]];
+    case 'drop2':  return [iv[(i+2)%n], iv[i%n], iv[(i+1)%n], iv[(i+3)%n]];
+    case 'drop3':  return [iv[(i+1)%n], iv[i%n], iv[(i+2)%n], iv[(i+3)%n]];
+    case 'drop24': return [iv[i%n], iv[(i+2)%n], iv[(i+1)%n], iv[(i+3)%n]];
+    default: return null;
+  }
+}
+
+// Find one playable ascending voicing on given strings for given PCs within fret box
+function findVoicing(strings, pcs, fMin, fMax){
+  // Randomise bass fret for positional variety
+  const bassPool=[];
+  for(let f=fMin;f<=fMax;f++) if(notePC(strings[0],f)===pcs[0]) bassPool.push(f);
+  if(!bassPool.length) return null;
+  bassPool.sort(()=>Math.random()-.5); // shuffle
+
+  for(const f0 of bassPool){
+    const pos=[{s:strings[0],f:f0}];
+    let prev=noteMidi(strings[0],f0), ok=true;
+    for(let k=1;k<strings.length;k++){
+      let best=null;
+      for(let f=fMin;f<=fMax;f++){
+        const m=noteMidi(strings[k],f);
+        if(m>prev&&notePC(strings[k],f)===pcs[k]&&(!best||m<best.m))
+          best={f,m};
+      }
+      if(!best){ok=false;break;}
+      pos.push({s:strings[k],f:best.f});
+      prev=best.m;
+    }
+    if(ok){
+      const frets=pos.map(p=>p.f);
+      const span=Math.max(...frets)-Math.min(...frets);
+      // For full fretboard (>4 fret range) require span ≤5; box mode always fits
+      if(fMax-fMin<=4||span<=5) return pos;
+    }
+  }
+  return null;
+}
+
+// Collect ALL feasible voicings for a chord/root/box
+function allFeasibleVoicings(chord, rootPC, fMin, fMax){
+  const specs=chord.i.length<=3
+    ? VOICING_SPECS.filter(s=>s.type==='triad')
+    : VOICING_SPECS.filter(s=>s.type!=='triad');
+  const maxInv=chord.i.length-1;
+  const feasible=[];
+  for(const spec of specs){
+    for(let inv=0;inv<=maxInv;inv++){
+      const offs=getVoicingIntervals(chord,inv,spec.type);
+      if(!offs) continue;
+      const pcs=offs.map(o=>(rootPC+o)%12);
+      const v=findVoicing(spec.strings,pcs,fMin,fMax);
+      if(v) feasible.push({spec,inv,voicing:v});
+    }
+  }
+  return feasible;
+}
+
+
+// ============================================================
+// HOF RANKING HELPERS
+// ============================================================
+function computeRank(entries, errors, time){
+  // Count entries strictly better: fewer errors, or same errors + less time
+  return entries.filter(e=>{
+    const ee=e.errors??99;
+    return ee<errors||(ee===errors&&e.time<time);
+  }).length+1;
+}
+function rankText(rank){
+  if(rank===1)  return {msg:'CHAMPION OF THE FRETBOARD!',cls:'flawless'};
+  if(rank<=3)   return {msg:'ELITE WARRIOR!',cls:'vgreen'};
+  if(rank<=5)   return {msg:'TOP FIGHTER!',cls:'vred'};
+  if(rank<=10)  return {msg:'RISING FIGHTER!',cls:'vred'};
+  return null;
+}
+
+
+// Lobby HOF: completely separate from results-screen HOF to avoid _hofGen interference
+async function refreshLobbyHOF(mode){
+  const titleEl=document.getElementById('lobby-hof-title');
+  const bodyEl=document.getElementById('lobby-hof-body');
+  if(titleEl) titleEl.textContent='HALL OF FAME — '+getModeLongName(mode).toUpperCase();
+  if(bodyEl) bodyEl.innerHTML='<span style="color:var(--muted);font-size:13px">Loading...</span>';
+  let entries=[];
+  if(useFirebase){
+    try{
+      const snap=await fbDB.ref('leaderboards/'+mode).once('value');
+      snap.forEach(c=>entries.push(c.val()));
+      entries.sort((a,b)=>(a.errors??99)-(b.errors??99)||a.time-b.time);
+      entries=entries.slice(0,10);
+    }catch(e){ entries=getLocal(mode); }
+  } else { entries=getLocal(mode); }
+  if(bodyEl) renderHOF(entries,bodyEl);
+}
+
+document.addEventListener('DOMContentLoaded',()=>{
+  buildFretboard(document.getElementById('fb-svg'));
+
+  // Lobby
+  document.getElementById('btn-start').addEventListener('click',()=>{
+    const name=document.getElementById('inp-name').value.trim();
+    if(!name){
+      const inp=document.getElementById('inp-name'); inp.focus();
+      inp.style.borderColor='var(--red2)'; setTimeout(()=>inp.style.borderColor='',1000); return;
+    }
+    startGame();
+  });
+  document.getElementById('inp-name').addEventListener('keydown',e=>{ if(e.key==='Enter') document.getElementById('btn-start').click(); });
+  document.getElementById('btn-htp').addEventListener('click',()=>document.getElementById('modal').classList.add('open'));
+  document.getElementById('btn-close-modal').addEventListener('click',()=>document.getElementById('modal').classList.remove('open'));
+  document.getElementById('modal').addEventListener('click',e=>{ if(e.target===document.getElementById('modal')) document.getElementById('modal').classList.remove('open'); });
+
+  // Mode change: show box for chord-id and scale-id
+  document.getElementById('sel-mode').addEventListener('change',function(){
+    const needBox=['chord-id','scale-id','chord-con','scale-con'].includes(this.value);
+    document.getElementById('box-wrap').style.display=needBox?'block':'none';
+    document.getElementById('box-lbl').textContent=
+      ['chord-id','chord-con'].includes(this.value)?'Chord Box Selection':'Scale Box Identification';
+    refreshLobbyHOF(this.value);
+  });
+  refreshLobbyHOF('note-id');
+
+  // Game controls
+  document.getElementById('btn-pause').addEventListener('click',()=>{
+    G.paused=!G.paused;
+    document.getElementById('btn-pause').textContent=G.paused?'> RESUME':'II PAUSE';
+  });
+  document.getElementById('btn-restart').addEventListener('click',()=>{ clearInterval(G.tInt); startGame(); });
+  document.getElementById('btn-stop').addEventListener('click',()=>{ clearInterval(G.tInt); G.done=true; showScreen('s-lobby'); });
+  setupMercy();
+
+  // iOS audio: listeners (function defined globally above)
+  document.addEventListener('touchstart',unlockIOSAudio,{once:true,passive:true});
+  document.addEventListener('click',unlockIOSAudio,{once:true,passive:true});
+
+  // Fretboard: click (desktop) and tap-vs-drag (mobile)
+  const fbSvg=document.getElementById('fb-svg');
+  let _tStartX=0,_tStartY=0,_tStartMs=0;
+
+  fbSvg.addEventListener('click',function(e){
+    if(!G.inConstruction||G.locked||G.paused||G.done) return;
+    const {x,y}=getSVGCoords(e);
+    const {s,f}=coordsToSF(x,y);
+    handleFretboardClick(s,f);
+  });
+  fbSvg.addEventListener('touchstart',function(e){
+    const t=e.touches[0];
+    _tStartX=t.clientX; _tStartY=t.clientY; _tStartMs=Date.now();
+  },{passive:true});
+  fbSvg.addEventListener('touchend',function(e){
+    if(!G.inConstruction||G.locked||G.paused||G.done) return;
+    const t=e.changedTouches[0];
+    const dx=Math.abs(t.clientX-_tStartX), dy=Math.abs(t.clientY-_tStartY);
+    const dt=Date.now()-_tStartMs;
+    if(dx<14&&dy<14&&dt<220){ // tap: short press, no drag
+      e.preventDefault();
+      const {x,y}=getSVGCoordsTouch(t);
+      const {s,f}=coordsToSF(x,y);
+      handleFretboardClick(s,f);
+    }
+    // else: it was a drag scroll — ignore
+  },{passive:false});
+
+  // SUBMIT button
+  document.getElementById('btn-submit').addEventListener('click', handleSubmit);
+
+  // Results
+  document.getElementById('btn-save').addEventListener('click',async()=>{
+    _hofGen++; // cancel any pending loadHOF
+    const b=document.getElementById('btn-save'); b.disabled=true; b.textContent='SAVING...';
+    try{
+      await saveScore(G.mode,G.name,G.errors,G.timer);
+      b.textContent='SAVED!';
+    }catch(saveErr){
+      console.error('Save error:',saveErr);
+      b.textContent='SAVED (local)';
+    }
+    // Load entries, compute rank, update display
+    let entries=[];
+    if(useFirebase){
+      try{
+        await new Promise(r=>setTimeout(r,500));
+        const snap=await fbDB.ref('leaderboards/'+G.mode).once('value');
+        snap.forEach(c=>entries.push(c.val()));
+      }catch(e){ entries=getLocal(G.mode); }
+    } else { entries=getLocal(G.mode); }
+    // Guarantee new entry is in list (handles Firebase propagation delay)
+    if(!entries.some(e=>e.name===G.name&&(e.errors??99)===G.errors&&e.time===G.timer)){
+      entries.push({name:G.name,errors:G.errors,time:G.timer,date:new Date().toLocaleDateString()});
+    }
+    entries.sort((a,b)=>(a.errors??99)-(b.errors??99)||a.time-b.time);
+    entries=entries.slice(0,10);
+    const rank=computeRank(entries,G.errors,G.timer);
+    // Update score display: show rank
+    document.getElementById('fin-score').textContent='#'+rank;
+    document.querySelector('.score-lbl').textContent='RANKING';
+    // MK-style rank text
+    const rt=rankText(rank);
+    if(rt){ const vt=document.getElementById('v-text'); vt.textContent=rt.msg; vt.className='vtext '+rt.cls; }
+    // Render HOF with new entry highlighted
+    const bodyEl=document.getElementById('hof-body');
+    const loadEl=document.getElementById('hof-load');
+    if(loadEl) loadEl.style.display='none';
+    renderHOF(entries,bodyEl,{name:G.name,errors:G.errors,time:G.timer});
+    // Pre-refresh lobby HOF so it's ready when user returns to menu
+    refreshLobbyHOF(G.mode);
+    const fn=document.getElementById('firebase-note');
+    if(fn) fn.innerHTML=useFirebase
+      ?'<span style="color:var(--green2)">★ Global leaderboard active</span>'
+      :'Local leaderboard only — <a href="https://console.firebase.google.com" target="_blank">set up Firebase</a> for global rankings';
+  });
+  document.getElementById('btn-again').addEventListener('click',startGame);
+  document.getElementById('btn-menu').addEventListener('click',()=>{ clearInterval(G.tInt); showScreen('s-lobby'); refreshLobbyHOF(G.mode); });
+});
+</script>
+<audio id="ios-silent" loop playsinline src="data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=" style="display:none"></audio>
+</body>
+</html>
