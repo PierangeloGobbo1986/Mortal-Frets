@@ -1,23 +1,26 @@
 ☠ MORTAL FRETS — The Fretboard Slayer
-Retro arcade-style guitar fretboard training game inspired by Mortal Kombat. 8 game modes across Identification and Construction. Global leaderboard powered by Firebase.
+Retro arcade-style guitar fretboard trainer inspired by Mortal Kombat. 8 game modes across Identification and Construction. Global leaderboard powered by Firebase.
 🎮 Play Now
 
 Game Modes
 All modes: 10 questions per round · Score = errors (fewer = better) · Tiebreaker: time
-Identification — see the question, press the correct button
+Identification — see the question on the fretboard, press the correct button
 ModeWhat you seeWhat you doNote IDDot on fretboard (frets 0–12, all strings)Press the correct note nameInterval IDR (root, red) + interval dot within ±3 frets/±2 stringsPress the correct interval (m2–P8)Chord IDReal voicing — triads on 3 adjacent strings, tetrads as Drop 2 / Drop 3 / Drop 2+4Press the correct chord typeScale IDFull scale in a 5-fret box, R = RootPress the correct scale name
-Construction — target shown (illuminated button), build it, press SUBMIT
-ModeWhat you seeWhat you doNote ConstructionTarget note illuminatedPlace ALL occurrences on the fretboardInterval ConstructionR pre-placed, interval illuminatedClick anywhere to place the note — auto-checks immediatelyChord ConstructionOne chord tone pre-placed (with role label), chord type illuminatedPlace remaining notes in any order, one per stringScale ConstructionR pre-placed in box, scale type illuminatedFill all scale positions in the box
+Construction — target illuminated, build it on the fretboard, press SUBMIT
+ModeWhat you seeWhat you doNote ConstructionTarget note illuminatedPlace ALL occurrences on the fretboardInterval ConstructionR pre-placed (red), interval illuminatedClick anywhere to place the note — auto-checks immediatelyChord ConstructionOne chord tone pre-placed (amber, with role R/3/5/7)Place remaining notes, one per stringScale ConstructionR pre-placed in boxFill all scale positions
 
 Rules
 
-Wrong answer (ID): stay on same question, retry. Timer keeps running.
-Wrong SUBMIT (Construction): wrong dots → red, missing → orange. Click to fix, re-SUBMIT.
-Mercy ☠: activates after 2 wrong answers. Hold to reveal full solution; release to retry. Resets each question.
-Variety: same type appears at most twice per round; exact same question never repeats.
-Box selection: Chord and Scale modes — fixed 5-fret box or 💀 KHAOS (random every question).
-Notation: toggle A-B-C or Do-Re-Mi at any time.
+Variety: same type appears at most twice per round; exact same question never repeats
+Wrong answer (ID): retry same question, timer keeps running
+Wrong SUBMIT (Construction): wrong dots → red, missing → orange; click to fix, re-SUBMIT
+Mercy ☠: activates after 2 wrong answers — hold to reveal solution, release to retry
+Box selection: Chord and Scale modes — fixed 5-fret box or 💀 KHAOS (random each question)
+Notation: toggle A-B-C / Do-Re-Mi at any time
 
+
+Active Chords & Scales
+Before starting, deselect chord or scale types you want to skip. Deselected types show ✕ in the lobby and in-game. The leaderboard supports two views: ALL (everyone) or SAME CONFIG (only entries with your same selection).
 
 Scoring
 ErrorsResult0⚡ FLAWLESS VICTORY1–2EXCELLENT FIGHTER3–5SKILLED WARRIOR6–10FIGHT HARDER11–19FINISH HIM20+FATALITY
@@ -27,37 +30,31 @@ Notes: all 12 chromatic, frets 0–12, all 6 strings (standard tuning E A D G B 
 Intervals: m2 · M2 · m3 · M3 · P4 · TT · P5 · m6 · M6 · m7 · M7 · P8
 Chords: Maj · min · Aug · Dim · Maj7 · Dom7 · min7 · ø7 · °7
 Scales: Major · Natural Minor · Harmonic Minor · Melodic Minor · Whole-Half Dim · Half-Whole Dim
-Chord voicings: triads on all 4 adjacent 3-string groups · Drop 2 on 3 adjacent 4-string groups · Drop 3 on 4 groups (2 standard + 2 non-standard) · Drop 2+4 on 2 groups · all inversions
+Voicings: triads on all 4 adjacent 3-string groups · Drop 2, Drop 3, Drop 2+4 on all adjacent 4-string groups · all inversions
 
-Deploy on GitHub Pages
+Deploy
 
 Upload mortal_frets.html renamed as index.html
-Settings → Pages → branch main → / (root)
-Live at https://yourusername.github.io/repo-name/
+GitHub Settings → Pages → branch main → / (root)
 
 
-Global Leaderboard (Firebase)
-Uses Firebase Realtime Database REST API — no SDK, direct HTTP calls, always reads fresh from server.
-Setup:
+Firebase Setup
+Uses Firebase Realtime Database REST API (no SDK).
 
-console.firebase.google.com → new project → Realtime Database → Start in test mode
-Copy the database URL (e.g. https://your-project-default-rtdb.europe-west1.firebasedatabase.app)
-Replace FB_CONFIG near the top of the <script> tag with your project values
-Set rules (Realtime Database → Rules):
+console.firebase.google.com → new project → Realtime Database
+Replace FB_CONFIG near the top of the <script> tag
+Set rules:
 
 json{
   "rules": {
     "leaderboards": {
-      "$mode": {
-        ".read": true,
-        ".write": true
-      }
+      "$mode": { ".read": true, ".write": true }
     }
   }
 }
-Separate leaderboard per mode. Sorted by errors asc → time asc.
 
-Tech Stack
-Pure HTML/CSS/JavaScript · Web Audio API · SVG fretboard · Firebase REST API · Press Start 2P + Rajdhani · CRT scanlines · MK-style screen flash + shake
+Tech
+Pure HTML/CSS/JS · Web Audio API · SVG fretboard · Firebase REST API · Press Start 2P + Rajdhani · CRT scanlines
 License
-MIT
+Copyright © 2026 Pierangelo Gobbo. All rights reserved.
+Unauthorized copying, modification or distribution is strictly prohibited.
